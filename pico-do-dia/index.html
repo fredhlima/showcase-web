@@ -1,0 +1,1916 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pico do dia</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens (SPEC) ---------- */
+:root{
+  --bg:#F5F0E6; --bg-2:#E3F4F1; --surface:#FFFFFF; --surface-2:#F0EBE1;
+  --border:rgba(10,40,50,0.10); --text:#0B2530; --text-2:#3F5761;
+  --accent:#0A8F8A; --accent-ink:#FFFFFF; --coral:#F2643D;
+  --track:rgba(11,37,48,0.08); --sea-a:#D6F1EE; --sea-b:#A9DDD8; --land:#EFE7D7;
+  --nav:rgba(255,255,255,0.90); --shadow:0 1px 2px rgba(11,37,48,.04),0 12px 32px -16px rgba(11,37,48,.22);
+  --card-blur:none; --ink-pill:#06201A; --scrim:rgba(5,18,25,.42);
+  --wave-2:#5AA9FF; --accent-soft:rgba(10,143,138,.12); --amber:#FFB547; --amber-ink:#8F5300; --amber-soft:rgba(255,181,71,.22); --coral-soft:rgba(242,100,61,.13);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#051219; --bg-2:#0A2A36; --surface:rgba(255,255,255,0.06); --surface-2:rgba(255,255,255,0.10);
+    --border:rgba(255,255,255,0.10); --text:#E8F4F6; --text-2:#9DB7BF;
+    --accent:#2EE6C5; --accent-ink:#03261F; --coral:#FF7A55;
+    --track:rgba(255,255,255,0.10); --sea-a:#0E3B4A; --sea-b:#062330; --land:rgba(255,255,255,0.09);
+    --nav:rgba(5,18,25,0.86); --shadow:none; --accent-soft:rgba(46,230,197,.14); --amber:#FFB547; --amber-ink:#FFB547; --amber-soft:rgba(255,181,71,.16); --coral-soft:rgba(255,122,85,.16); --card-blur:blur(14px); --scrim:rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#051219; --bg-2:#0A2A36; --surface:rgba(255,255,255,0.06); --surface-2:rgba(255,255,255,0.10);
+  --border:rgba(255,255,255,0.10); --text:#E8F4F6; --text-2:#9DB7BF;
+  --accent:#2EE6C5; --accent-ink:#03261F; --coral:#FF7A55;
+  --track:rgba(255,255,255,0.10); --sea-a:#0E3B4A; --sea-b:#062330; --land:rgba(255,255,255,0.09);
+  --nav:rgba(5,18,25,0.86); --shadow:none; --accent-soft:rgba(46,230,197,.14); --amber:#FFB547; --amber-ink:#FFB547; --amber-soft:rgba(255,181,71,.16); --coral-soft:rgba(255,122,85,.16); --card-blur:blur(14px); --scrim:rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+
+/* ---------- Base ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; min-height:100dvh; color:var(--text);
+  font:400 15px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:linear-gradient(180deg,var(--bg-2) 0,var(--bg) 460px) no-repeat, var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:inherit}
+button:disabled{opacity:.42;cursor:default}
+h1,h2,h3,h4{margin:0;font-weight:800}
+h1,h2,h3,h4,.num{font-family:"Bricolage Grotesque",system-ui,-apple-system,sans-serif}
+p{margin:0}
+svg{display:block}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic.sm{width:16px;height:16px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hide{display:none!important}
+
+/* ---------- Layout ---------- */
+.app{position:relative;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh}
+.view{padding:0 16px calc(env(safe-area-inset-bottom) + 116px);min-width:0}
+.view.enter{animation:viewIn .3s ease-out both}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.banner{
+  position:sticky;top:0;z-index:30;margin:0 -16px;
+  padding:calc(env(safe-area-inset-top) + 7px) 16px 7px;text-align:center;
+  font:600 11px/1.2 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-2);background:var(--bg);border-bottom:1px solid var(--border);
+}
+.page-head{padding:20px 0 4px}
+.page-head h1{font-size:32px;line-height:1.05;letter-spacing:-.025em;margin:10px 0 6px}
+.lead{color:var(--text-2);font-size:14px}
+.eyebrow{margin:0;font:600 11px/1.2 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--text-2)}
+.card{
+  position:relative;min-width:0;background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:16px;box-shadow:var(--shadow);
+  -webkit-backdrop-filter:var(--card-blur);backdrop-filter:var(--card-blur);overflow:hidden;
+}
+.sec{margin-top:24px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 2px 12px}
+.sec-head h2{font-size:20px;line-height:1.2;letter-spacing:-.015em}
+.sec-head span{font-size:13px;color:var(--text-2);white-space:nowrap}
+.card h2{font-size:17px;letter-spacing:-.01em;margin-bottom:4px}
+.hint{font-size:13px;color:var(--text-2);margin-bottom:12px}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 10px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--border);
+  font:600 12px/1 Inter,system-ui,sans-serif;color:var(--text);white-space:nowrap;
+}
+.chip .ic{width:14px;height:14px;color:var(--accent)}
+.pill{
+  display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:999px;
+  font:700 12px/1 Inter,system-ui,sans-serif;color:var(--ink-pill);white-space:nowrap;
+}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{
+  display:inline-flex;align-items:center;gap:4px;min-height:22px;padding:0 8px;border-radius:999px;
+  background:var(--surface-2);font:600 11px/1 Inter,system-ui,sans-serif;color:var(--text);white-space:nowrap;
+}
+.tag.terral{color:var(--accent)}
+.tag.maral{color:var(--coral)}
+
+/* ---------- Ondas ---------- */
+.ondas{position:relative;height:72px;margin:14px -16px 0;overflow:hidden;pointer-events:none}
+.ondas.abs{position:absolute;left:0;right:0;bottom:0;margin:0;height:86px}
+.track{position:absolute;left:0;bottom:0;height:100%;width:200%;display:flex;animation:drift 18s linear infinite}
+.track svg{width:50%;height:100%;flex:none}
+.track path{fill:currentColor}
+.track.w1{color:var(--accent);opacity:.30}
+.track.w2{color:var(--accent);opacity:.18;animation-duration:26s;animation-direction:reverse}
+.track.w3{color:var(--wave-2);opacity:.20;animation-duration:22s}
+@keyframes drift{to{transform:translateX(-50%)}}
+.pro-hero .track{color:var(--accent-ink);opacity:.16}
+.pro-hero .track.w2{opacity:.10}
+
+/* ---------- Anel de nota ---------- */
+.ring-wrap{position:relative;flex:none;width:var(--s);height:var(--s);display:grid;place-items:center}
+.ring-wrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ring-n{position:relative;font:800 var(--fs,44px)/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--text)}
+.ring-arc{animation:arc 1.1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes arc{from{stroke-dashoffset:var(--c)}to{stroke-dashoffset:var(--o)}}
+
+/* ---------- Tab bar ---------- */
+.tabbar{
+  position:fixed;z-index:35;left:50%;bottom:0;transform:translateX(-50%);
+  width:100%;max-width:480px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;
+  padding:6px 10px calc(env(safe-area-inset-bottom) + 8px);
+  background:var(--nav);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--border);
+}
+.tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:52px;border-radius:16px;font:600 11px/1 Inter,system-ui,sans-serif;color:var(--text-2)}
+.tab .ic{width:24px;height:24px}
+.tab[aria-current="page"]{color:var(--accent)}
+.tab[aria-current="page"]::before{content:"";position:absolute;top:-7px;width:28px;height:3px;border-radius:3px;background:var(--accent)}
+.tpro{position:absolute;top:4px;left:calc(50% + 6px);padding:2px 4px;border-radius:6px;background:var(--coral);color:#fff;font:800 8px/1 Inter,system-ui,sans-serif;letter-spacing:.06em}
+
+/* ---------- Hoje ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
+.brand{display:flex;align-items:center;gap:8px;font:800 20px/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em}
+.brand .ic{color:var(--accent);width:24px;height:24px}
+.hoje-head{padding:16px 0 4px}
+.hoje-head h1{margin:14px 0 6px;font-size:32px;line-height:1.05;letter-spacing:-.025em}
+.local{margin-top:2px;color:var(--text-2);font-size:14px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.dotsep{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.6}
+.days{display:flex;gap:8px;overflow-x:auto;margin:14px -16px 0;padding:4px 16px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);mask-image:linear-gradient(90deg,#000 84%,transparent)}
+.days::-webkit-scrollbar{display:none}
+.day{
+  flex:none;width:66px;min-height:72px;border-radius:18px;background:var(--surface);border:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;
+  font-size:11px;color:var(--text-2);
+}
+.day b{font:800 19px/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--text)}
+.day.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.day.on b{color:var(--accent-ink)}
+.day .lk{position:absolute;top:7px;right:7px;width:14px;height:14px;color:var(--coral)}
+.day .pro{font:700 10px/1 Inter,system-ui,sans-serif;letter-spacing:.1em;color:var(--coral)}
+
+.hero{
+  margin-top:20px;padding:18px;
+  background:radial-gradient(120% 90% at 100% 0%,var(--hc-a,rgba(46,230,197,.2)) 0%,transparent 62%),var(--surface);
+}
+.hero-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hero-main{display:flex;align-items:center;gap:18px;margin-top:14px}
+.hero-txt{min-width:0;flex:1}
+.hero h3{font-size:26px;line-height:1.1;letter-spacing:-.02em;margin-top:8px}
+.sub{margin-top:4px;color:var(--text-2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px}
+.mt{background:var(--surface-2);border-radius:14px;padding:10px 8px;min-width:0}
+.mt .ic{width:16px;height:16px;color:var(--accent)}
+.mt b{display:block;margin-top:6px;font:700 15px/1.1 "Bricolage Grotesque",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt small{display:block;margin-top:2px;font-size:11px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.janela{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;font-weight:600;min-width:0}
+.janela .ic{color:var(--accent)}
+.btn-link{display:inline-flex;align-items:center;gap:4px;margin-top:10px;min-height:44px;font:600 15px Inter,system-ui,sans-serif;color:var(--accent)}
+.btn-link .ic{width:18px;height:18px}
+
+.lista{display:grid;gap:10px;margin-top:4px}
+.row{
+  display:flex;align-items:center;gap:12px;width:100%;min-height:80px;padding:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);
+  -webkit-backdrop-filter:var(--card-blur);backdrop-filter:var(--card-blur);transition:transform .15s ease;
+}
+.row:active{transform:scale(.985)}
+.row .ring-wrap{--s:52px}
+.info{flex:1;min-width:0}
+.info h4{font-size:16px;line-height:1.2;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info .sub{margin:2px 0 6px}
+.spark{flex:none;width:72px;height:38px}
+.oculto{
+  width:100%;margin-top:14px;min-height:48px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;border-radius:16px;border:1px dashed var(--border);color:var(--text-2);font:600 14px Inter,system-ui,sans-serif;
+}
+.oculto .ic{transition:transform .2s}
+.oculto[aria-expanded="true"] .ic{transform:rotate(180deg)}
+.motivos{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.motivos li{padding:11px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--border);font-size:13px;display:grid;gap:2px;min-width:0}
+.motivos li span{color:var(--text-2);font-size:12px}
+.vazio{padding:22px;text-align:center;color:var(--text-2)}
+
+/* ---------- Botões ---------- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:0 18px;border-radius:18px;font:700 16px/1 Inter,system-ui,sans-serif;text-align:center}
+.btn-primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 14px 28px -14px var(--accent)}
+.btn-ghost{background:var(--surface);border:1px solid var(--border)}
+.btn-sm{width:auto;min-height:44px;padding:0 16px;font-size:14px;border-radius:14px}
+
+/* ---------- Mapa ---------- */
+.mapa-head{padding:16px 0 4px}
+.mapa-head h1{font-size:32px;line-height:1.05;letter-spacing:-.025em;margin:10px 0 6px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:16px;background:var(--surface-2)}
+.seg button{min-height:44px;padding:0 10px;border-radius:12px;font:600 14px/1.1 Inter,system-ui,sans-serif;color:var(--text-2);display:flex;align-items:center;justify-content:center;gap:6px;text-align:center}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.seg .ic{width:18px;height:18px}
+.mapa-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 12px}
+.mapa{
+  position:relative;width:100%;aspect-ratio:4/5;border-radius:26px;overflow:hidden;
+  background:linear-gradient(180deg,var(--sea-a),var(--sea-b));border:1px solid var(--border);box-shadow:var(--shadow);
+}
+.mapa > svg{position:absolute;inset:0;width:100%;height:100%}
+.mapa .terra{fill:var(--land)}
+.mapa .costa{fill:none;stroke:var(--accent);stroke-opacity:.6;stroke-width:1.6px;vector-effect:non-scaling-stroke}
+.mapa .aviso-ill{position:absolute;left:12px;top:12px}
+.cid{position:absolute;transform:translate(-50%,-50%);font:600 10px/1 Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2);white-space:nowrap;pointer-events:none;opacity:.9}
+.pin{position:absolute;transform:translate(-50%,-50%);width:44px;height:44px;display:grid;place-items:center;border-radius:50%;isolation:isolate}
+.pin .bolha{
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--bg);
+  font:800 13px/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink-pill);box-shadow:0 6px 16px rgba(0,0,0,.25);transition:transform .2s;
+}
+.pin[aria-pressed="true"] .bolha{transform:scale(1.14)}
+.pin.best::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--pc);opacity:.55;z-index:-1;animation:pulse 1.9s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.8);opacity:.6}100%{transform:scale(2.3);opacity:0}}
+.mini{
+  position:absolute;left:10px;right:10px;bottom:10px;padding:14px;border-radius:20px;
+  background:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow);
+}
+.mini-top{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.mini h4{font-size:17px;letter-spacing:-.01em}
+.mini .sub{margin:2px 0 8px}
+.mini-acoes{display:flex;gap:8px;margin-top:12px;align-items:center}
+.mini-acoes .btn{flex:1}
+.ico-btn{width:44px;height:44px;flex:none;border-radius:14px;display:grid;place-items:center;background:var(--surface-2)}
+.legenda{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:14px;font-size:12px;color:var(--text-2)}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+.legenda i{width:12px;height:12px;border-radius:50%;display:inline-block}
+
+/* ---------- Pro ---------- */
+.pro-hero{
+  position:relative;overflow:hidden;border-radius:26px;padding:22px 20px 110px;margin-top:14px;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--wave-2) 100%);color:var(--accent-ink);
+}
+.pro-hero .pill{background:rgba(255,255,255,.2);color:inherit;border:1px solid rgba(255,255,255,.3);letter-spacing:.06em}
+.pro-hero h2{font-size:28px;line-height:1.08;letter-spacing:-.02em;margin:14px 0 8px;position:relative}
+.pro-hero p{font-size:14px;opacity:.92;position:relative;max-width:34ch}
+.pro-hero .ondas{color:var(--accent-ink)}
+.ben-list{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px}
+.ben{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:18px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow)}
+.ben .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);color:var(--accent);flex:none}
+.ben b{display:block;font-size:15px;font-weight:600}
+.ben span{font-size:13px;color:var(--text-2)}
+.previa{position:relative;display:grid;gap:10px;margin-top:20px}
+.previa-card{padding:14px 16px;border-radius:18px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.previa-card .bl{filter:blur(3.5px);user-select:none;font-size:14px;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.previa-card .lk{display:flex;align-items:center;gap:6px;font:700 12px/1 Inter,system-ui,sans-serif;color:var(--coral);white-space:nowrap}
+.previa-card .lk .ic{width:14px;height:14px}
+.planos{display:grid;gap:10px;margin-top:20px}
+.plano{
+  display:flex;align-items:center;gap:12px;width:100%;min-height:76px;padding:14px 16px;border-radius:18px;
+  background:var(--surface);border:2px solid var(--border);text-align:left;
+}
+.plano[aria-checked="true"]{border-color:var(--accent)}
+.plano .radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--text-2);flex:none;display:grid;place-items:center}
+.plano[aria-checked="true"] .radio{border-color:var(--accent)}
+.plano[aria-checked="true"] .radio::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.plano .p-txt{flex:1;min-width:0}
+.plano .p-txt b{display:block;font-size:15px}
+.plano .p-txt span{font-size:12px;color:var(--text-2)}
+.plano .p-val{font:800 19px/1 "Bricolage Grotesque",system-ui,sans-serif;white-space:nowrap}
+.economia{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:700 10px/1 Inter,system-ui,sans-serif;vertical-align:middle}
+.legal{font-size:12px;color:var(--text-2);text-align:center;margin-top:12px}
+.sheet-x{position:absolute;top:14px;right:14px;z-index:2;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.18);color:inherit}
+.grab{width:44px;height:5px;border-radius:3px;background:var(--text-2);opacity:.5;margin:8px auto 10px}
+
+/* ---------- Perfil ---------- */
+.nv-opts{display:grid;gap:8px;margin-top:10px}
+.nv-opt{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 12px;border-radius:16px;border:2px solid var(--border);background:var(--surface-2);text-align:left}
+.nv-opt[aria-pressed="true"]{border-color:var(--accent)}
+.nv-opt .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--surface);color:var(--accent);flex:none}
+.nv-opt b{display:block;font-size:15px}
+.nv-opt span{font-size:12px;color:var(--text-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips button{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);font:600 14px Inter,system-ui,sans-serif}
+.chips button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.perfil-seg{margin-top:12px}
+.sobre p{font-size:14px;color:var(--text-2);margin-top:6px}
+
+/* ---------- Ficha ---------- */
+.layer{
+  position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;
+  overflow:hidden;z-index:40;pointer-events:none;
+}
+.layer.open{pointer-events:auto}
+.panel{
+  position:absolute;inset:0;background:var(--bg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+  transform:translateX(100%);visibility:hidden;
+  transition:transform .3s cubic-bezier(.2,.7,.2,1),visibility 0s linear .3s;
+}
+.layer.open .panel{transform:none;visibility:visible;transition:transform .3s cubic-bezier(.2,.7,.2,1),visibility 0s}
+.spot-top{position:relative;padding:calc(env(safe-area-inset-top) + 8px) 16px 20px;background:linear-gradient(180deg,var(--hc-a,rgba(46,230,197,.2)) 0,transparent 100%)}
+.voltar{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 12px 0 4px;margin-left:-6px;font:600 15px Inter,system-ui,sans-serif}
+.spot-head{display:flex;align-items:center;gap:16px;margin-top:6px;min-width:0}
+.spot-head .sh-txt{min-width:0;flex:1}
+.spot-head h1{font-size:30px;line-height:1.05;letter-spacing:-.025em;margin:10px 0 4px}
+.spot-desc{margin-top:14px;font-size:14px;color:var(--text)}
+.badge-modelo{display:inline-flex;align-items:center;gap:6px;margin-top:14px;min-height:30px;padding:0 12px;border-radius:999px;background:var(--surface);border:1px dashed var(--coral);color:var(--coral);font:700 12px/1 Inter,system-ui,sans-serif}
+.aviso-ficha{margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--surface-2);font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.aviso-ficha .ic{color:var(--coral)}
+.spot-body{display:grid;gap:14px;padding:0 16px calc(env(safe-area-inset-bottom) + 28px)}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+.card-h span{font-size:12px;color:var(--text-2);text-align:right}
+.crit{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--border)}
+.crit:first-of-type{border-top:0;padding-top:0}
+.crit-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;font-weight:600}
+.crit-h em{font-style:normal;font-weight:500;color:var(--text-2);font-size:12px;margin-left:6px}
+.crit-h b{font:800 17px/1 "Bricolage Grotesque",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.bar{height:10px;border-radius:999px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;transition:width .8s cubic-bezier(.2,.7,.2,1)}
+.crit p{font-size:12.5px;color:var(--text-2)}
+.formula{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-2)}
+.chart svg,.mare svg{width:100%;height:auto;overflow:visible}
+.chart text{fill:var(--text-2);font:600 11px Inter,system-ui,sans-serif}
+.chart text.now{fill:var(--text);font-weight:800}
+.mare text{fill:var(--text-2);font:600 11px Inter,system-ui,sans-serif}
+.plano .p-txt .economia{color:var(--accent-ink);font-size:10px;font-weight:700;background:var(--accent);padding:3px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.janela-tag{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 10px;border-radius:999px;background:var(--surface-2);font:600 12px/1 Inter,system-ui,sans-serif;white-space:nowrap}
+.janela-tag .ic{width:14px;height:14px;color:var(--accent)}
+.mare-info{display:grid;gap:6px;margin-top:10px;font-size:13px}
+.mare-info div{display:flex;align-items:center;gap:8px}
+.mare-info .ic{width:16px;height:16px;color:var(--accent)}
+.wrow{display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px;scrollbar-width:none}
+.wrow::-webkit-scrollbar{display:none}
+.wi{flex:none;width:54px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;border-radius:16px;background:var(--surface-2);font-size:12px;color:var(--text-2)}
+.wi b{font:700 13px/1 Inter,system-ui,sans-serif;color:var(--text);white-space:nowrap}
+.wi .arrow{width:24px;height:24px;color:var(--accent);transform-origin:50% 50%}
+.wi.now{outline:2px solid var(--accent);outline-offset:-2px;color:var(--text)}
+.ft{display:grid;grid-template-columns:1fr 1fr;gap:14px 14px}
+.ft div{min-width:0}
+.ft dt{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2)}
+.ft dd{margin:4px 0 0;font-weight:600;font-size:14px;line-height:1.3}
+.ft .full{grid-column:1/-1}
+.riscos{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:8px}
+.riscos li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.riscos .ic{color:var(--coral);width:18px;height:18px;margin-top:1px}
+
+/* ---------- Sheet (Pro) ---------- */
+.sheet-layer{z-index:50}
+.scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;transition:opacity .3s}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow-y:auto;overscroll-behavior:contain;
+  border-radius:28px 28px 0 0;background:var(--bg);border-top:1px solid var(--border);
+  transform:translateY(104%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.7,.2,1),visibility 0s linear .32s;
+  padding:0 16px calc(env(safe-area-inset-bottom) + 22px);
+}
+.sheet-layer.open .scrim{opacity:1}
+.sheet-layer.open .sheet{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.7,.2,1),visibility 0s}
+.sheet-inner{position:relative}
+
+/* ---------- Onboarding ---------- */
+.onb{
+  position:fixed;inset:0;z-index:70;left:50%;transform:translateX(-50%);width:100%;max-width:480px;
+  background:var(--bg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 16px calc(env(safe-area-inset-bottom) + 20px);display:flex;flex-direction:column;gap:18px;
+}
+.onb[hidden]{display:none}
+.onb-art{position:relative;height:230px;margin:0 -16px;padding-top:calc(env(safe-area-inset-top) + 28px);overflow:hidden;background:linear-gradient(180deg,var(--bg-2) 0%,var(--bg) 100%);text-align:center}
+.onb-logo{position:relative;display:inline-flex;align-items:center;gap:10px;font:800 46px/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.03em}
+.onb-logo .ic{width:44px;height:44px;color:var(--accent)}
+.onb-slogan{position:relative;margin-top:10px;font-size:16px;color:var(--text-2)}
+.onb-art .ondas{position:absolute;left:0;right:0;bottom:-4px;margin:0;height:90px}
+.onb h2{font-size:26px;line-height:1.12;letter-spacing:-.02em;margin-top:4px}
+.onb-cards{display:grid;gap:10px}
+.nv{display:flex;align-items:center;gap:14px;width:100%;min-height:92px;padding:14px;border-radius:22px;background:var(--surface);border:2px solid var(--border);text-align:left;box-shadow:var(--shadow)}
+.nv[aria-checked="true"]{border-color:var(--accent);background:var(--surface-2)}
+.nv .ico{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;background:var(--surface-2);color:var(--accent);flex:none}
+.nv[aria-checked="true"] .ico{background:var(--surface)}
+.nv .ico svg{width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.nv b{display:block;font:700 18px/1.2 "Bricolage Grotesque",system-ui,sans-serif}
+.nv span{display:block;margin-top:3px;font-size:13px;color:var(--text-2)}
+.onb .btn{margin-top:4px}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed;z-index:80;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);
+  transform:translate(-50%,16px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+  max-width:calc(100% - 32px);padding:12px 16px;border-radius:16px;background:var(--text);color:var(--bg);
+  font:600 14px/1.3 Inter,system-ui,sans-serif;text-align:center;box-shadow:var(--shadow);
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Revisão 2 ---------- */
+.hero .sub{white-space:normal;overflow:visible;text-overflow:clip}
+.aviso-noite{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:9px 12px;border-radius:14px;background:var(--surface-2);font-size:13px;font-weight:600;color:var(--text)}
+.aviso-noite .ic{width:16px;height:16px;color:var(--accent)}
+.resumo b{white-space:normal;overflow:visible;text-overflow:clip}
+.mapa{aspect-ratio:auto;overflow:hidden}
+.lideres line{vector-effect:non-scaling-stroke}
+.pt{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--pc);border:2px solid var(--bg);z-index:2;pointer-events:none;box-sizing:border-box}
+.pt.best::before{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--coral);animation:halo2 1.8s ease-out infinite;z-index:-1}
+@keyframes halo2{0%{width:14px;height:14px;margin:-7px 0 0 -7px;opacity:.9}100%{width:28px;height:28px;margin:-14px 0 0 -14px;opacity:0}}
+.pl{position:absolute;left:52%;right:8px;min-height:42px;display:flex;align-items:center;gap:8px;padding:3px 10px 3px 4px;border-radius:21px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);text-align:left;z-index:3;transform:translateY(0)}
+.pl.best{border:2px solid var(--coral)}
+.pl[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.pl .pn{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:800 12px/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink-pill)}
+.pl .pnome{font:600 12.5px/1.15 Inter,system-ui,sans-serif;color:var(--text);min-width:0}
+.cid{font-size:10px}
+
+/* ---------- Revisão 1: herói premium, ranking, mapa, perfil e alertas ---------- */
+.hero{margin-top:20px;padding:0;background:linear-gradient(165deg,var(--hc-a,rgba(46,230,197,.2)) 0%,transparent 62%),var(--surface)}
+.hero-body{position:relative;z-index:1;padding:18px}
+.hero .track{color:var(--hc,var(--accent));opacity:.22}
+.hero .ondas.abs{height:78px}
+.hero-main{display:flex;align-items:center;gap:16px;margin-top:12px}
+.hero-txt{min-width:0;flex:1}
+.hero h3{font-size:22px;line-height:1.1;letter-spacing:-.02em;margin-top:8px}
+.hero-why{margin-top:10px;font-size:13px;line-height:1.35;color:var(--text)}
+.hspark{display:block;width:100%;height:auto;margin-top:14px;overflow:visible}
+.hspark text{fill:var(--text-2);font:600 10px Inter,system-ui,sans-serif}
+.hspark text.now{fill:var(--text);font-weight:800}
+.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mt{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:center;padding:12px}
+.mt .ic{grid-row:span 2;width:18px;height:18px}
+.mt b{margin-top:0}
+.mt small{margin-top:3px}
+.rcol{flex:none;display:grid;justify-items:center;gap:6px;width:64px}
+.rot{font:700 11px/1 Inter,system-ui,sans-serif;color:var(--text-2);white-space:nowrap}
+.tag.terral{color:var(--accent);background:var(--accent-soft)}
+.tag.lateral{color:var(--amber-ink);background:var(--amber-soft)}
+.tag.maral{color:var(--coral);background:var(--coral-soft)}
+.lista.fade{animation:listIn .4s ease-out both}
+@keyframes listIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.pin.best::before{content:"";position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:var(--coral);z-index:-1;animation:halo 1.8s ease-out infinite}
+@keyframes halo{0%{width:28px;height:28px;margin:-14px 0 0 -14px;opacity:.8}100%{width:52px;height:52px;margin:-26px 0 0 -26px;opacity:0}}
+.cid{transform:translate(-100%,-50%);z-index:1;text-align:right}
+.pin{z-index:2}
+.lideres{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
+.lideres line{stroke:var(--text-2);stroke-width:1;opacity:.8}
+.mini{position:relative;left:auto;right:auto;bottom:auto;margin-top:12px}
+.resumo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.resumo div:first-child{grid-column:1/-1}
+.resumo div{min-width:0}
+.resumo b{display:block;margin-top:6px;font:800 19px/1.1 "Bricolage Grotesque",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resumo span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
+.rodape{margin-top:18px;text-align:center;font-size:12px;color:var(--text-2)}
+.conta{margin-top:8px;padding:9px 11px;border-radius:12px;background:var(--surface-2);color:var(--text);font-weight:600;font-size:13px}
+.crit.pot .crit-h b small{font-size:12px;font-weight:600;color:var(--text-2)}
+.lista{grid-template-columns:minmax(0,1fr)}
+.row{min-width:0}
+.info{min-width:0}
+.tags{min-width:0}
+.chart text.band{fill:var(--accent);font:700 10px Inter,system-ui,sans-serif}
+
+/* ---------- Revisão 3: modo Pro simulado ---------- */
+.pro-pill{background:var(--accent);color:var(--accent-ink);min-height:22px;padding:0 8px;font:800 10px/1 Inter,system-ui,sans-serif;letter-spacing:.08em}
+.brand .pro-pill{margin-left:2px}
+.previsao-dia{margin:0 2px 12px;font-size:13px;color:var(--text-2)}
+.row-main{display:flex;align-items:center;gap:12px;flex:1;min-width:0;align-self:stretch;cursor:pointer}
+.rside{flex:none;display:grid;justify-items:center;gap:4px;width:72px}
+.fav-btn{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:14px;color:var(--text-2)}
+.fav-btn .ic{width:20px;height:20px}
+.fav-btn[aria-pressed="true"]{color:var(--amber)}
+.fav-btn[aria-pressed="true"] .ic{fill:currentColor}
+.spot-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.spot-nav .fav-btn{margin-right:-10px}
+.tag.fav{color:var(--amber-ink);background:var(--amber-soft)}
+.chev{width:18px;height:18px;color:var(--text-2)}
+.plano-card .btn-sm{margin-top:12px}
+.alertas{display:grid;gap:10px}
+.alerta{padding:16px}
+.alerta h3{font-size:18px;line-height:1.2;letter-spacing:-.01em}
+.alerta.off h3{color:var(--text-2)}
+.alerta-top{display:flex;align-items:center;gap:6px;min-width:0}
+.alerta-nome{flex:1;min-width:0}
+.alerta-nome .sub{margin:2px 0 0}
+.alerta-min{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:14px;color:var(--text-2)}
+.alerta-status{margin-top:12px;font-size:13px;color:var(--text-2)}
+.switch{flex:none;width:56px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.switch i{position:relative;display:block;width:48px;height:28px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);transition:background .2s}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--text-2);transition:transform .2s,background .2s}
+.switch[aria-checked="true"] i{background:var(--accent);border-color:transparent}
+.switch[aria-checked="true"] i::after{transform:translateX(20px);background:var(--accent-ink)}
+.stepper{flex:none;display:flex;align-items:center;gap:4px;padding:3px;border-radius:16px;background:var(--surface-2)}
+.stepper button{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--surface);color:var(--text);font:700 20px/1 Inter,system-ui,sans-serif}
+.stepper b{min-width:50px;text-align:center;font:800 18px/1 "Bricolage Grotesque",system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--text)}
+.alvo{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;padding:10px 12px;margin-top:8px;border-radius:18px;background:var(--surface);border:1px solid var(--border);text-align:left;cursor:pointer}
+.alvo .info{flex:1;min-width:0}
+.alvo .ic{color:var(--accent)}
+.sheet-head h2{margin-top:6px;font-size:24px;line-height:1.15;letter-spacing:-.02em}
+.sheet-head .hint{margin:6px 0 14px}
+.boas{position:fixed;inset:0;z-index:72;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;align-items:center;justify-content:center;padding:24px 16px calc(env(safe-area-inset-bottom) + 24px);background:var(--bg);overflow-y:auto}
+.boas[hidden]{display:none}
+.boas-in{display:grid;justify-items:center;gap:14px;max-width:340px;text-align:center}
+.boas-ico{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent) 0%,var(--wave-2) 100%);color:var(--accent-ink);box-shadow:0 18px 36px -16px var(--accent);animation:boasIn .5s cubic-bezier(.2,.7,.2,1) both}
+.boas-ico .ic{width:46px;height:46px;stroke-width:2.6}
+.boas h2{font-size:28px;line-height:1.08;letter-spacing:-.02em}
+.boas p{font-size:14px;color:var(--text-2)}
+.boas .btn{margin-top:8px}
+@keyframes boasIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 9c2.5-2 5-2 7.5 0s5 2 7.5 0 2.5-2 5 0M2 15.5c2.5-2 5-2 7.5 0s5 2 7.5 0 2.5-2 5 0"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.6v.1"/></symbol>
+<symbol id="i-car" viewBox="0 0 24 24"><path d="M3.5 16.5V12l2-5h13l2 5v4.5z"/><path d="M3.5 12h17M7 16.5v2M17 16.5v2"/></symbol>
+<symbol id="i-ruler" viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h6"/></symbol>
+<symbol id="i-tide" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 4v15M6.5 13.5L12 19l5.5-5.5"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v14l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v14M15 6.5v14"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></symbol>
+<symbol id="i-lv1" viewBox="0 0 48 48"><path d="M4 31c5-5 10-5 15 0s10 5 15 0 6-3 10-1"/><circle cx="14" cy="18" r="2.5"/><circle cx="26" cy="14" r="2"/><circle cx="36" cy="19" r="2.5"/></symbol>
+<symbol id="i-lv2" viewBox="0 0 48 48"><path d="M5 38C14 34 22 20 40 12C34 19 33 29 42 36C30 40 14 41 5 38Z"/><path d="M14 36c4-3 7-3 11 0"/></symbol>
+<symbol id="i-lv3" viewBox="0 0 48 48"><path d="M4 41C6 16 26 6 44 14C36 18 32 26 34 41"/><path d="M14 41c3-9 9-12 16-9"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.8h5V7M6.5 7l1 12.2h9l1-12.2"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</defs>
+</svg>
+
+<div class="app" id="app">
+  <main class="view" id="view"></main>
+
+  <nav class="tabbar" aria-label="Principal">
+    <button class="tab" data-act="tab" data-v="hoje"><svg class="ic"><use href="#i-sun"/></svg><span>Hoje</span></button>
+    <button class="tab" data-act="tab" data-v="mapa"><svg class="ic"><use href="#i-pin"/></svg><span>Mapa</span></button>
+    <button class="tab" data-act="tab" data-v="alertas"><svg class="ic"><use href="#i-bell"/></svg><span>Alertas</span><i class="tpro">PRO</i></button>
+    <button class="tab" data-act="tab" data-v="perfil"><svg class="ic"><use href="#i-user"/></svg><span>Perfil</span></button>
+  </nav>
+
+  <section class="layer" id="spot" aria-hidden="true"><div class="panel" id="spot-panel"></div></section>
+  <section class="layer sheet-layer" id="sheet" aria-hidden="true">
+    <div class="scrim" data-act="pro-close"></div>
+    <div class="sheet" id="sheet-panel" role="dialog" aria-label="Pico do dia Pro"></div>
+  </section>
+
+  <section class="onb" id="onb" hidden aria-label="Boas-vindas"></section>
+  <section class="boas" id="boas" hidden role="dialog" aria-label="Boas-vindas ao Pro"></section>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= Erros e utilitários ================= */
+var ERR = [];
+window.addEventListener('error', function(e){ ERR.push(String((e && e.message) || e)); });
+window.addEventListener('unhandledrejection', function(e){ ERR.push('promise: ' + String(e && e.reason)); });
+
+var $ = function(s, r){ return (r || document).querySelector(s); };
+var TAU = 2 * Math.PI;
+function round1(x){ return Math.round(x * 10) / 10; }
+function round2(x){ return Math.round(x * 100) / 100; }
+function fmt1(n){ return n.toFixed(1).replace('.', ','); }
+function fmt2(n){ return n.toFixed(2).replace('.', ','); }
+function pad2(n){ return String(n).padStart(2, '0'); }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+function hexA(hex, a){
+  var n = parseInt(hex.slice(1), 16);
+  return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+
+/* Armazenamento: só conveniência. Tudo em try/catch e com cópia em memória. */
+var MEM = {};
+function sget(k){ try { return localStorage.getItem(k); } catch (e) { return Object.prototype.hasOwnProperty.call(MEM, k) ? MEM[k] : null; } }
+function sset(k, v){ MEM[k] = v; try { localStorage.setItem(k, v); } catch (e) { /* storage indisponível */ } }
+
+/* ================= Constantes ================= */
+var NIVEIS = ['iniciante', 'intermediario', 'avancado'];
+var NIVEL_NOME = { iniciante: 'Iniciante', intermediario: 'Intermediário', avancado: 'Avançado' };
+var NIVEL_DESC = {
+  iniciante: 'Espuma e ondas pequenas',
+  intermediario: 'Já dropo e faço a parede',
+  avancado: 'Tubo, laje e mar grande'
+};
+var NIVEL_ICO = { iniciante: 'i-lv1', intermediario: 'i-lv2', avancado: 'i-lv3' };
+var REGIOES = { todas: 'Todas', 'grande-vitoria': 'Grande Vitória', 'litoral-sul': 'Litoral Sul', 'litoral-norte': 'Litoral Norte' };
+var TELAS = ['hoje', 'mapa', 'alertas', 'perfil'];
+var BANDAS = ['baixa', 'media', 'alta'];
+var BANDA_NOME = { baixa: 'baixa', media: 'média', alta: 'alta' };
+var TIPO_NOME = { terral: 'Terral', lateral: 'Lateral', maral: 'Maral', calmo: 'Calmo' };
+var CARD = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+var DIAS_LONGO = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+var DIAS_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+var PESOS = { tamanho: 0.30, direcao: 0.20, periodo: 0.15, vento: 0.25, mare: 0.10 };
+var ORDEM_CRIT = [['tamanho','Tamanho'],['direcao','Direção'],['periodo','Período'],['vento','Vento'],['mare','Maré']];
+var FUNDOS_RASOS = ['pedra', 'laje', 'areia e pedra'];
+
+/* ================= Os 11 picos (ficha exata do SPEC) ================= */
+var SPOTS = [
+  { id:'pico-do-le', nome:'Pico do Lé', cidade:'Vila Velha', regiao:'grande-vitoria', lat:-20.45, lon:-40.33,
+    orientacao:130, fundo:'areia e pedra', swellIdeal:{dir:140,tol:30}, periodoIdeal:{min:9,max:13}, tamanho:{min:0.8,max:2.0},
+    potencial:0.9, mareIdeal:{nivel:'media',fase:'enchendo'}, nivel:'intermediario', exposicao:1.1,
+    riscos:['Pedra solta na ponta','Crowd no fim de semana'],
+    acesso:'Trilha curta a partir da orla, sem estacionamento oficial.',
+    distanciaKm:22, tempoCarroMin:30,
+    descricao:'Ficha-modelo do app. Pico de canto com pedra e areia, bom com ondulação de sul e terral cedo.',
+    modelo:true },
+  { id:'barra-do-jucu', nome:'Barra do Jucu', cidade:'Vila Velha', regiao:'grande-vitoria', lat:-20.414, lon:-40.322,
+    orientacao:120, fundo:'areia', swellIdeal:{dir:150,tol:30}, periodoIdeal:{min:9,max:14}, tamanho:{min:0.8,max:2.2},
+    potencial:0.95, mareIdeal:{nivel:'media',fase:'enchendo'}, nivel:'intermediario', exposicao:1.1,
+    riscos:['Correnteza na foz do rio','Crowd no fim de semana'],
+    acesso:'Estacionamento na orla, acesso pela areia.',
+    distanciaKm:18, tempoCarroMin:25,
+    descricao:'Beach break clássico da foz do Jucu. Funciona melhor com ondulação de sul/sudeste e terral de manhã.',
+    modelo:false },
+  { id:'itaparica', nome:'Itaparica', cidade:'Vila Velha', regiao:'grande-vitoria', lat:-20.36, lon:-40.29,
+    orientacao:110, fundo:'areia', swellIdeal:{dir:120,tol:35}, periodoIdeal:{min:7,max:11}, tamanho:{min:0.4,max:1.2},
+    potencial:0.75, mareIdeal:{nivel:'media',fase:'qualquer'}, nivel:'iniciante', exposicao:0.8,
+    riscos:['Banhistas nas canaletas','Vento forte à tarde'],
+    acesso:'Calçadão da orla, descida fácil pela areia.',
+    distanciaKm:10, tempoCarroMin:15,
+    descricao:'Praia de ondas pequenas e macias, ótima para as primeiras sessões.',
+    modelo:false },
+  { id:'curva-da-jurema', nome:'Curva da Jurema', cidade:'Vitória', regiao:'grande-vitoria', lat:-20.305, lon:-40.285,
+    orientacao:80, fundo:'areia', swellIdeal:{dir:110,tol:40}, periodoIdeal:{min:6,max:10}, tamanho:{min:0.3,max:1.0},
+    potencial:0.6, mareIdeal:{nivel:'alta',fase:'qualquer'}, nivel:'iniciante', exposicao:0.5,
+    riscos:['Ressaca na maré alta','Pouca ondulação no verão'],
+    acesso:'Acesso direto pela praça, sem vaga própria.',
+    distanciaKm:6, tempoCarroMin:10,
+    descricao:'Enseada abrigada, com espuma e pouca força. Ideal para aprender a remar e levantar.',
+    modelo:false },
+  { id:'camburi', nome:'Camburi', cidade:'Vitória', regiao:'grande-vitoria', lat:-20.27, lon:-40.27,
+    orientacao:60, fundo:'areia', swellIdeal:{dir:90,tol:40}, periodoIdeal:{min:6,max:10}, tamanho:{min:0.3,max:0.9},
+    potencial:0.55, mareIdeal:{nivel:'alta',fase:'qualquer'}, nivel:'iniciante', exposicao:0.45,
+    riscos:['Movimento de escolas de surf','Canal de correnteza no lado norte'],
+    acesso:'Estacionamento na avenida beira-mar, acesso por passarelas.',
+    distanciaKm:8, tempoCarroMin:12,
+    descricao:'Praia urbana, de mar pequeno e muitos iniciantes. Melhor com mar cedo.',
+    modelo:false },
+  { id:'manguinhos', nome:'Manguinhos', cidade:'Serra', regiao:'grande-vitoria', lat:-20.19, lon:-40.19,
+    orientacao:70, fundo:'pedra', swellIdeal:{dir:100,tol:30}, periodoIdeal:{min:8,max:12}, tamanho:{min:0.7,max:1.8},
+    potencial:0.8, mareIdeal:{nivel:'baixa',fase:'enchendo'}, nivel:'intermediario', exposicao:1.0,
+    riscos:['Fundo de pedra raso na maré baixa','Ouriços na saída'],
+    acesso:'Estacionamento de terra na ponta, descida por escadinha de pedra.',
+    distanciaKm:25, tempoCarroMin:30,
+    descricao:'Pedra firme que organiza a onda com maré baixa e ondulação de leste-sudeste.',
+    modelo:false },
+  { id:'jacaraipe', nome:'Jacaraípe', cidade:'Serra', regiao:'grande-vitoria', lat:-20.15, lon:-40.18,
+    orientacao:80, fundo:'areia e pedra', swellIdeal:{dir:100,tol:30}, periodoIdeal:{min:8,max:13}, tamanho:{min:0.8,max:2.0},
+    potencial:0.85, mareIdeal:{nivel:'media',fase:'secando'}, nivel:'intermediario', exposicao:1.05,
+    riscos:['Corrente de retorno no canal','Crowd no verão'],
+    acesso:'Orla com estacionamento pago, acesso pela areia e pelo píer.',
+    distanciaKm:30, tempoCarroMin:35,
+    descricao:'Mistura de areia e pedra no norte da praia. Ponto estável para quem já dropa.',
+    modelo:false },
+  { id:'ponta-da-fruta', nome:'Ponta da Fruta', cidade:'Vila Velha', regiao:'litoral-sul', lat:-20.52, lon:-40.36,
+    orientacao:140, fundo:'laje', swellIdeal:{dir:160,tol:25}, periodoIdeal:{min:10,max:16}, tamanho:{min:1.2,max:3.0},
+    potencial:1, mareIdeal:{nivel:'baixa',fase:'secando'}, nivel:'avancado', exposicao:1.3,
+    riscos:['Laje rasa e cortante','Mar grande com corrente forte','Acesso só por trilha'],
+    acesso:'Trilha de 15 min pela costeira; sem estacionamento na ponta.',
+    distanciaKm:35, tempoCarroMin:40,
+    descricao:'Laje de ponta com ondas de tubo quando a ondulação de sudeste encontra o mar grande. Só para quem sabe o que faz.',
+    modelo:false },
+  { id:'setiba', nome:'Setiba', cidade:'Guarapari', regiao:'litoral-sul', lat:-20.62, lon:-40.42,
+    orientacao:150, fundo:'areia', swellIdeal:{dir:150,tol:30}, periodoIdeal:{min:9,max:14}, tamanho:{min:0.8,max:2.0},
+    potencial:0.85, mareIdeal:{nivel:'media',fase:'qualquer'}, nivel:'intermediario', exposicao:1.15,
+    riscos:['Correnteza na saída da lagoa','Crowd no fim de semana'],
+    acesso:'Estacionamento na orla da vila, acesso pela areia.',
+    distanciaKm:50, tempoCarroMin:50,
+    descricao:'Praia aberta e longa, com dois ou três bancos de areia. Gosta de terral de oeste.',
+    modelo:false },
+  { id:'meaipe', nome:'Meaípe', cidade:'Guarapari', regiao:'litoral-sul', lat:-20.73, lon:-40.53,
+    orientacao:160, fundo:'areia', swellIdeal:{dir:140,tol:35}, periodoIdeal:{min:7,max:12}, tamanho:{min:0.4,max:1.3},
+    potencial:0.75, mareIdeal:{nivel:'media',fase:'qualquer'}, nivel:'iniciante', exposicao:0.75,
+    riscos:['Vento forte à tarde','Pouca sinalização de corrente'],
+    acesso:'Estacionamento na vila de pescadores, acesso direto.',
+    distanciaKm:62, tempoCarroMin:60,
+    descricao:'Mar calmo e raso, bom para iniciantes e para quem quer surfar sem multidão.',
+    modelo:false },
+  { id:'regencia', nome:'Regência', cidade:'Linhares', regiao:'litoral-norte', lat:-19.66, lon:-39.82,
+    orientacao:60, fundo:'areia', swellIdeal:{dir:90,tol:35}, periodoIdeal:{min:8,max:13}, tamanho:{min:0.8,max:2.2},
+    potencial:0.95, mareIdeal:{nivel:'media',fase:'enchendo'}, nivel:'intermediario', exposicao:1.2,
+    riscos:['Barra do Rio Doce com correnteza','Praia isolada, sem salva-vidas em dia de semana'],
+    acesso:'Estrada de terra até o píer; estacionamento na beira da praia.',
+    distanciaKm:140, tempoCarroMin:120,
+    descricao:'Banco de areia de ondas longas, ao lado da barra do Rio Doce. Pede trajeto longo e mar cheio.',
+    modelo:false }
+];
+SPOTS.forEach(function(sp){ sp.ventoTerral = (sp.orientacao + 180) % 360; }); /* R1.1: derivado */
+var SPOT_BY_ID = {};
+SPOTS.forEach(function(s){ SPOT_BY_ID[s.id] = s; });
+var SPOT_IDS = SPOTS.map(function(s){ return s.id; });
+
+/* Linha da costa do ES (lon, lat) */
+var COSTA = [[-39.73,-18.59],[-39.70,-19.00],[-39.80,-19.40],[-39.82,-19.66],[-39.95,-19.90],[-40.15,-20.10],
+  [-40.18,-20.16],[-40.25,-20.25],[-40.28,-20.32],[-40.32,-20.42],[-40.36,-20.52],[-40.42,-20.62],
+  [-40.53,-20.73],[-40.65,-20.85],[-40.75,-20.95],[-40.85,-21.05],[-40.95,-21.30]];
+
+/* ================= Previsão fake (determinística, mulberry32 seed 42) ================= */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function mareRaw(t){ return 0.8 + 0.7 * Math.sin(TAU * (t - 3) / 12.42); }
+
+/* R1.2: previsão com dois ciclos de altura regional (70 h e 23 h) e terral que gira por dia.
+   Ajuste de calibração (R1.5) aplicado nas constantes desta função, sem tocar pesos nem fórmula da nota. */
+function buildHourly(){
+  var rnd = mulberry32(42);
+  var out = [];
+  for (var t = 0; t < 168; t++){
+    var rA = (rnd() * 2 - 1) * 0.12;
+    var rP = (rnd() * 2 - 1) * 0.6;
+    var rV = rnd() * 2 - 1;
+    var rD = rnd() * 2 - 1;
+    var dia = Math.floor(t / 24);
+    var regional = Math.max(0.2, 1.0 + 0.6 * Math.sin(TAU * t / 70) + 0.3 * Math.sin(TAU * t / 23) + rA);
+    regional = round1(regional);
+    var periodo = round1(10 + 2.5 * Math.sin(TAU * t / 90 + 1) + rP);
+    var swellDir = Math.round(130 + 35 * Math.sin(TAU * t / 110));
+    var h = t % 24, ventoDir, ventoVel;
+    if (h >= 4 && h <= 10){            // terral da manhã, direção muda por dia
+      ventoDir = 265 + 25 * Math.sin(TAU * dia / 5) + rD * 8;
+      ventoVel = 5 + (rV + 1) / 2 * 7;
+    } else if (h >= 11 && h <= 18){    // nordeste da tarde
+      ventoDir = 45 + rD * 8;
+      ventoVel = h === 15 ? 24 + (rV + 1) / 2 * 6 : 15 + (rV + 1) / 2 * 15;
+    } else {                           // noite
+      ventoDir = 20 + rD * 8;
+      ventoVel = 8 + (rV + 1) / 2 * 6;
+    }
+    ventoDir = Math.round((ventoDir + 360) % 360);
+    ventoVel = Math.round(ventoVel);
+    var m = round2(Math.min(1.5, Math.max(0.1, mareRaw(t))));
+    var mNext = round2(mareRaw(t + 1));
+    out.push({
+      regional: regional, periodo: periodo, swellDir: swellDir,
+      ventoVel: ventoVel, ventoDir: ventoDir,
+      mare: m, mareFase: mNext > m ? 'enchendo' : 'secando'
+    });
+  }
+  return out;
+}
+/* R1.2: fator de direção. Ondulação que não entra de frente na praia chega menor. */
+function fatorDir(sp, swellDir){
+  return Math.max(0.25, Math.cos(angDiff(swellDir, sp.orientacao) * Math.PI / 180));
+}
+var HOURLY = buildHourly();
+
+var FORECAST = {};
+SPOTS.forEach(function(sp){
+  FORECAST[sp.id] = HOURLY.map(function(hr){
+    return {
+      altura: round1(hr.regional * sp.exposicao * fatorDir(sp, hr.swellDir)),
+      fator: fatorDir(sp, hr.swellDir),
+      periodo: hr.periodo, swellDir: hr.swellDir,
+      ventoVel: hr.ventoVel, ventoDir: hr.ventoDir,
+      mare: hr.mare, mareFase: hr.mareFase
+    };
+  });
+});
+
+/* ================= Cálculo da nota (SPEC) ================= */
+function angDiff(a, b){
+  var d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+}
+function cardinal(d){
+  var n = ((d % 360) + 360) % 360;
+  return CARD[Math.round(n / 22.5) % 16];
+}
+function bandaDe(m){ return m < 0.55 ? 'baixa' : (m <= 1.05 ? 'media' : 'alta'); }
+function tipoVento(vel, dir, terral){
+  if (vel < 6) return 'calmo';
+  var d = angDiff(dir, terral);
+  if (d <= 45) return 'terral';
+  if (d <= 100) return 'lateral';
+  return 'maral';
+}
+
+/* Textos do potencial (R1.4) */
+function textoPotencial(p){
+  if (p >= 0.9) return 'pico de forma, com boa parede';
+  if (p >= 0.75) return 'pico consistente, de boa forma';
+  if (p >= 0.6) return 'praia de ondas pequenas, mesmo perfeita';
+  return 'praia abrigada, de ondas pequenas';
+}
+
+/* R1.3 e R1.4: componentes menos saturados, nota = 10 * base * potencial, com tetos. */
+function avaliar(sp, f){
+  var alt = f.altura, per = f.periodo;
+  var c = {}, tx = {};
+
+  // tamanho
+  var T = sp.tamanho, cT = (T.min + T.max) / 2, mT = (T.max - T.min) / 2;
+  var dentroT = alt >= T.min && alt <= T.max;
+  if (dentroT) c.tamanho = 1 - 0.35 * Math.abs(alt - cT) / mT;
+  else if (alt < T.min) c.tamanho = 0.65 * alt / T.min;
+  else c.tamanho = Math.max(0, 0.65 * (1 - (alt - T.max) / T.max));
+  tx.tamanho = fmt1(alt) + ' m · ' + (dentroT ? 'dentro do ideal' : (alt < T.min ? 'abaixo do ideal' : 'acima do ideal')) +
+    ' (' + fmt1(T.min) + '–' + fmt1(T.max) + ' m)';
+
+  // direção
+  var S_ = sp.swellIdeal, dd = angDiff(f.swellDir, S_.dir), tol = S_.tol;
+  if (dd <= tol / 2) c.direcao = 1;
+  else if (dd <= tol) c.direcao = 1 - 0.3 * (dd - tol / 2) / (tol / 2);
+  else if (dd < tol + 45) c.direcao = 0.7 * (1 - (dd - tol) / 45);
+  else c.direcao = 0;
+  tx.direcao = 'Ondulação ' + cardinal(f.swellDir) + ' · ' +
+    (dd <= tol ? 'dentro do ideal' : Math.round(dd) + '° fora do ideal') + ' (ideal ' + cardinal(S_.dir) + ')';
+
+  // período
+  var P = sp.periodoIdeal, cP = (P.min + P.max) / 2, mP = (P.max - P.min) / 2;
+  var dentroP = per >= P.min && per <= P.max;
+  if (dentroP) c.periodo = 1 - 0.25 * Math.abs(per - cP) / mP;
+  else if (per < P.min) c.periodo = 0.75 * Math.max(0, 1 - (P.min - per) / 4);
+  else c.periodo = 0.75 * Math.max(0, 1 - (per - P.max) / 6);
+  tx.periodo = fmt1(per) + ' s · ' + (dentroP ? 'dentro do ideal' : (per < P.min ? 'curto' : 'longo')) +
+    ' (' + P.min + '–' + P.max + ' s)';
+
+  // vento
+  var vel = f.ventoVel, vd = f.ventoDir;
+  var tipo = tipoVento(vel, vd, sp.ventoTerral);
+  if (vel < 6) c.vento = 0.95;
+  else {
+    var dv = angDiff(vd, sp.ventoTerral);
+    if (dv <= 45) c.vento = 1;
+    else if (dv <= 100) c.vento = 0.55 * (1 - Math.min(vel, 35) / 50);
+    else c.vento = 0.25 * (1 - Math.min(vel, 35) / 50);
+  }
+  tx.vento = 'Vento ' + cardinal(vd) + ' ' + vel + ' km/h · ' + TIPO_NOME[tipo].toLowerCase();
+
+  // maré
+  var M = sp.mareIdeal;
+  var ab = BANDAS.indexOf(bandaDe(f.mare));
+  var ib = BANDAS.indexOf(M.nivel);
+  var diff = Math.abs(ab - ib);
+  var base0 = diff === 0 ? 1 : (diff === 1 ? 0.5 : 0.1);
+  var fator = (M.fase !== 'qualquer' && M.fase !== f.mareFase) ? 0.8 : 1;
+  c.mare = base0 * fator;
+  tx.mare = 'Maré ' + BANDA_NOME[BANDAS[ab]] + ' ' + f.mareFase + ' · ' +
+    (diff === 0 ? 'ideal' : (diff === 1 ? 'faixa vizinha' : 'faixa oposta')) +
+    (fator < 1 ? ', pede ' + M.fase : '');
+
+  // encaixe (base 0..1)
+  var base = 0;
+  Object.keys(PESOS).forEach(function(k){
+    c[k] = Math.min(1, Math.max(0, c[k]));
+    base += PESOS[k] * c[k];
+  });
+  var pot = sp.potencial;
+  var prec = round1(10 * base * pot);          // antes dos tetos
+  var nota = 10 * base * pot, teto = '';
+  // abaixo do tamanho mínimo em que o pico funciona, não passa de Regular (ajuste do orquestrador, Revisão 3)
+  if (alt < sp.tamanho.min && nota > 5.9){ nota = 5.9; teto = 'abaixo do mínimo do pico'; }
+  if (alt < 0.6){ if (nota > 5){ nota = 5; teto = 'marola'; } }
+  if (alt < 0.3){ if (nota > 1.5){ nota = 1.5; teto = 'flat'; } }
+  if (nota >= 9 && (alt < 1.2 || per < 10)){ nota = 8.9; teto = 'mar pequeno ou período curto'; }
+  // R2.1: vento maral/lateral forte estraga o mar
+  var ventoCap = false, ventoTxt = '';
+  // Teto proporcional ao encaixe (3,5 a 5,5) para não empatar todos os picos no mesmo valor.
+  var capVento = round1(3.5 + 2 * base);
+  if (c.vento < 0.30 && nota > capVento){
+    nota = capVento; ventoCap = true;
+    ventoTxt = (tipo === 'maral' ? 'Vento maral forte' : 'Vento lateral forte') + ' limita a nota a ' + String(capVento).replace('.', ',');
+    teto = 'vento ' + (tipo === 'maral' ? 'maral' : 'lateral') + ' forte';
+  }
+  nota = Math.min(10, Math.max(0, round1(nota)));
+  return {
+    nota: nota, prec: prec, teto: teto, base: base, potencial: pot,
+    c: c, tx: tx, tipo: tipo, vel: vel, vd: vd, alt: alt, mare: f.mare, fase: f.mareFase,
+    periodo: per, swellDir: f.swellDir, encaixe: Math.round(base * 100),
+    fator: f.fator, ventoCap: ventoCap, ventoTxt: ventoTxt,
+    txPot: textoPotencial(pot)
+  };
+}
+
+var SCORE = {};
+SPOTS.forEach(function(sp){
+  SCORE[sp.id] = FORECAST[sp.id].map(function(f){ return avaliar(sp, f); });
+});
+
+/* Melhor janela de 3 h entre 5h e 18h (dia 0) */
+function melhorJanela(id, base){
+  var N = SCORE[id], best = null, b0 = base || 0;
+  for (var s = 5; s <= 15; s++){
+    var media = (N[b0 + s].nota + N[b0 + s + 1].nota + N[b0 + s + 2].nota) / 3;
+    if (!best || media > best.raw + 1e-9) best = { ini: s, fim: s + 3, raw: media, media: round1(media) };
+  }
+  return best;
+}
+
+/* Filtro por nível */
+function rankNivel(n){ return NIVEIS.indexOf(n); }
+function motivoOculto(sp, t, nivel){
+  var alt = FORECAST[sp.id][t].altura;
+  if (rankNivel(nivel) < rankNivel(sp.nivel)) return 'Pico para nível ' + NIVEL_NOME[sp.nivel].toLowerCase();
+  if (nivel === 'iniciante' && FUNDOS_RASOS.indexOf(sp.fundo) >= 0 && alt > 1.2)
+    return 'Fundo de ' + (sp.fundo === 'laje' ? 'laje' : 'pedra') + ' com mar acima de 1,2 m';
+  if (nivel === 'iniciante' && alt > 1.8) return 'Mar acima de 1,8 m para iniciantes';
+  if (nivel === 'intermediario' && sp.fundo === 'laje' && alt > 2.5) return 'Laje com mar acima de 2,5 m';
+  return null;
+}
+
+var ESTADO = {
+  nivel: 'intermediario', tema: 'auto', regiao: 'todas', loc: 'GPS', hora: new Date().getHours(),
+  tela: 'hoje', spot: null, sheet: false, pin: null, mapa: 'gv', plano: 'anual',
+  ocultosAbertos: false, onb: false, onbVisto: false, onbSel: null,
+  pro: false, dia: 0, alertas: [], favoritos: [], boas: false, sheetKind: 'pro', refDia: null
+};
+
+/* Lista do ranking para a hora e o nível dados (inclui ocultos com motivo) */
+function listar(t, nivel, regiao){
+  var out = [];
+  SPOTS.forEach(function(sp){
+    if (regiao && regiao !== 'todas' && sp.regiao !== regiao) return;
+    out.push({ spot: sp, s: SCORE[sp.id][t], motivo: motivoOculto(sp, t, nivel) });
+  });
+  return out;
+}
+function visiveis(t, nivel, regiao){
+  return listar(t, nivel, regiao).filter(function(x){ return !x.motivo; })
+    .sort(function(a, b){ return b.s.nota - a.s.nota; });
+}
+
+/* Cor e rótulo da nota (faixas do SPEC) */
+function corNota(n){
+  if (n < 4) return '#FF6B5B';
+  if (n < 6) return '#FFB547';
+  if (n < 7.5) return '#C6E85A';
+  if (n < 9) return '#3EE0B5';
+  return '#3EE0B5';
+}
+function rotuloNota(n){
+  if (n < 4) return 'Fraco';
+  if (n < 6) return 'Regular';
+  if (n < 7.5) return 'Bom';
+  if (n < 9) return 'Muito bom';
+  return 'Clássico';
+}
+function gradOf(n){ return n >= 9 ? ['#3EE0B5', '#5AA9FF'] : [corNota(n), corNota(n)]; }
+function pillBg(n){ return n >= 9 ? 'linear-gradient(90deg,#3EE0B5,#5AA9FF)' : corNota(n); }
+
+/* Nota: este bloco continua dentro da mesma IIFE (parte 3). */
+
+/* ================= Estado e URL ================= */
+var S = ESTADO;                       // S.hora = hora real (0..23); S.ref = índice da previsão (0..167)
+var P = new URLSearchParams(location.search);
+var UID = 0;
+var APP = 'Pico do dia';
+
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function ico(id, cls){ return '<svg class="ic ' + (cls || '') + '" aria-hidden="true" focusable="false"><use href="#' + id + '"/></svg>'; }
+function svgRef(id, px){ return '<svg width="' + px + '" height="' + px + '" viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><use href="#' + id + '"/></svg>'; }
+function saudacao(t){
+  if (t < 5) return 'Boa madrugada';
+  if (t < 12) return 'Bom dia';
+  if (t < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+/* R2.2: hora de referência. Sem luz (antes das 5h ou depois das 18h), usa a melhor hora de 5h a 11h. */
+function melhorHoraEntre(a, b){
+  var best = -1, bestH = a;
+  for (var h = a; h <= b; h++){
+    var vs = visiveis(h, S.nivel, S.regiao);
+    var top = vs.length ? vs[0].s.nota : -1;
+    if (top > best){ best = top; bestH = h; }
+  }
+  return bestH;
+}
+/* R3.3: dia > 0 (só Pro) usa a melhor hora entre 5h e 18h daquele dia. Dia 0 segue a regra acima. */
+function setRef(){
+  var hr = S.hora, d = S.pro ? S.dia : 0;
+  S.refDia = null;
+  if (d > 0){
+    S.ref = melhorHoraEntre(d * 24 + 5, d * 24 + 18); S.night = false; S.refWhen = null; S.refDia = diaTxt(d);
+  } else if (hr < 5){
+    S.ref = melhorHoraEntre(5, 11); S.night = true; S.refWhen = 'hoje';
+  } else if (hr > 18){
+    S.ref = melhorHoraEntre(29, 35); S.night = true; S.refWhen = 'amanhã';
+  } else {
+    S.ref = hr; S.night = false; S.refWhen = null;
+  }
+  S.base = Math.floor(S.ref / 24) * 24;   // início do dia da referência
+  S.hd = S.ref % 24;                       // hora do dia da referência
+}
+
+function ondas(extra){
+  var tile = '<svg viewBox="0 0 720 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 52C90 22 180 82 360 52S540 22 720 52V100H0Z"/></svg>';
+  return '<div class="ondas ' + (extra || '') + '" aria-hidden="true">' +
+    '<div class="track w1">' + tile + tile + '</div>' +
+    '<div class="track w2">' + tile + tile + '</div>' +
+    '<div class="track w3">' + tile + tile + '</div></div>';
+}
+
+function ring(nota, size, fs, stroke){
+  var id = 'rg' + (++UID), cx = size / 2, r = (size - stroke) / 2, c = TAU * r;
+  var frac = Math.max(0, Math.min(1, nota / 10)), off = c * (1 - frac), g = gradOf(nota);
+  return '<div class="ring-wrap" style="--s:' + size + 'px">' +
+    '<svg viewBox="0 0 ' + size + ' ' + size + '" aria-hidden="true">' +
+    '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" style="stop-color:' + g[0] + '"/><stop offset="1" style="stop-color:' + g[1] + '"/></linearGradient></defs>' +
+    '<circle cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke-width="' + stroke + '" style="stroke:var(--track)"/>' +
+    '<circle class="ring-arc" cx="' + cx + '" cy="' + cx + '" r="' + r + '" fill="none" stroke="url(#' + id + ')" stroke-width="' + stroke +
+    '" stroke-linecap="round" stroke-dasharray="' + c.toFixed(2) + '" stroke-dashoffset="' + off.toFixed(2) +
+    '" transform="rotate(-90 ' + cx + ' ' + cx + ')" style="--c:' + c.toFixed(2) + 'px;--o:' + off.toFixed(2) + 'px"/>' +
+    '</svg><span class="ring-n" style="--fs:' + fs + 'px">' + fmt1(nota) + '</span></div>';
+}
+
+/* Sparkline pequena (linha) e grande (herói, com a hora de referência marcada) */
+function spark(id, base){
+  var W = 72, H = 38, pts = [], N = SCORE[id];
+  for (var h = 5; h <= 19; h++) pts.push([(h - 5) / 14 * W, H - 3 - N[base + h].nota / 10 * (H - 6)]);
+  var d = pts.map(function(p, i){ return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+  var area = d + ' L' + W + ' ' + H + ' L0 ' + H + ' Z';
+  var gid = 'sp' + id;
+  return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' +
+    '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.35"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs>' +
+    '<path d="' + area + '" fill="url(#' + gid + ')"/>' +
+    '<path d="' + d + '" fill="none" style="stroke:var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+function sparkBig(id, base, hd){
+  var W = 300, H = 70, top = 10, bot = 50, N = SCORE[id], pts = [];
+  for (var h = 5; h <= 19; h++) pts.push([(h - 5) / 14 * W, bot - N[base + h].nota / 10 * (bot - top)]);
+  var d = pts.map(function(p, i){ return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+  var area = d + ' L' + W + ' ' + bot + ' L0 ' + bot + ' Z';
+  var gid = 'hsp' + id, has = (hd >= 5 && hd <= 19), cur = has ? pts[hd - 5] : null, curX = has ? (hd - 5) / 14 * W : 0;
+  return '<svg class="hspark" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Notas de 5h a 19h">' +
+    '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--hc,var(--accent));stop-opacity:.38"/><stop offset="1" style="stop-color:var(--hc,var(--accent));stop-opacity:0"/></linearGradient></defs>' +
+    (cur ? '<line x1="' + curX.toFixed(1) + '" x2="' + curX.toFixed(1) + '" y1="' + top + '" y2="' + bot + '" style="stroke:var(--text-2)" stroke-dasharray="3 3"/>' : '') +
+    '<path d="' + area + '" fill="url(#' + gid + ')"/>' +
+    '<path d="' + d + '" fill="none" style="stroke:var(--hc,var(--accent))" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    (cur ? '<circle cx="' + cur[0].toFixed(1) + '" cy="' + cur[1].toFixed(1) + '" r="5" style="fill:var(--hc,var(--accent));stroke:var(--bg)" stroke-width="2.5"/>' +
+      '<text class="now" x="' + cur[0].toFixed(1) + '" y="' + (cur[1] - 9).toFixed(1) + '" text-anchor="' + (curX < 40 ? 'start' : (curX > 260 ? 'end' : 'middle')) + '">' + hd + 'h · ' + fmt1(SCORE[id][base + hd].nota) + '</text>' : '') +
+    '<text x="0" y="' + (H - 2) + '">5h</text><text x="' + (W / 2) + '" y="' + (H - 2) + '" text-anchor="middle">12h</text><text x="' + W + '" y="' + (H - 2) + '" text-anchor="end">19h</text>' +
+    '</svg>';
+}
+
+function mt(icon, value, label){
+  return '<div class="mt">' + ico(icon) + '<b>' + value + '</b><small>' + esc(label) + '</small></div>';
+}
+function tagVento(s, f){
+  var cls = s.tipo === 'calmo' ? '' : s.tipo;
+  return '<span class="tag ' + cls + '">' + TIPO_NOME[s.tipo] + ' ' + f.ventoVel + ' km/h</span>';
+}
+function entradaTxt(fa){
+  return fa >= 0.85 ? 'entra de frente' : (fa >= 0.55 ? 'entra na diagonal' : 'entra de lado');
+}
+function hhmm(x){
+  var mins = Math.round(x * 60), h = Math.floor(mins / 60), m = mins % 60;
+  return h + 'h' + pad2(m);
+}
+
+/* R2.4: linha "por quê" com os 2 componentes mais fortes e o mais fraco (se < 0,6). */
+function fraseForte(k, sc, sp){
+  var f = sc;
+  if (k === 'tamanho') return sc.c.tamanho >= 0.8 ? 'tamanho ideal' : 'tamanho razoável';
+  if (k === 'direcao') return sc.fator >= 0.85 ? 'ondulação entrando de frente' : (sc.fator >= 0.55 ? 'ondulação entrando na diagonal' : 'ondulação entrando de lado');
+  if (k === 'periodo') return 'período de ' + fmt1(sc.periodo) + ' s';
+  if (k === 'vento') return sc.tipo === 'terral' ? 'terral limpo' : (sc.tipo === 'lateral' ? 'vento lateral' : (sc.tipo === 'maral' ? 'vento de maral' : 'mar sem vento'));
+  if (k === 'mare') return 'maré ' + sc.fase + (sc.c.mare >= 0.8 ? ' no ponto' : '');
+  return k;
+}
+function fraseFraca(k, sc, sp){
+  if (k === 'tamanho') return sc.alt < sp.tamanho.min ? 'mar pequeno demais' : 'mar grande demais';
+  if (k === 'direcao') return 'ondulação de lado';
+  if (k === 'periodo') return 'período fora do ideal';
+  if (k === 'vento') return (sc.tipo === 'maral' || sc.tipo === 'lateral') ? 'vento contra' : 'vento fraco';
+  if (k === 'mare') return 'maré contra';
+  return k;
+}
+function porQue(sc, sp){
+  var keys = Object.keys(sc.c).sort(function(a, b){ return sc.c[b] - sc.c[a]; });
+  var out = fraseForte(keys[0], sc, sp) + ' + ' + fraseForte(keys[1], sc, sp);
+  var last = keys[keys.length - 1];
+  if (sc.c[last] < 0.6) out += ' · ' + fraseFraca(last, sc, sp);
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
+/* ================= Revisão 3: modo Pro simulado (estado, alertas, favoritos) ================= */
+var SEMENTE_ALERTAS = [{ id: 'barra-do-jucu', min: 7, ativo: true }, { id: 'pico-do-le', min: 7, ativo: true }];
+var boasT = null;
+
+function lerJSON(k){ try { var raw = sget(k); return raw === null ? null : JSON.parse(raw); } catch (e) { return undefined; } }
+function salvarAlertas(){ sset('terral.alertas', JSON.stringify(S.alertas)); }
+function salvarFavs(){ sset('terral.favoritos', JSON.stringify(S.favoritos)); }
+function alertaValido(a){
+  return !!a && typeof a === 'object' && !!SPOT_BY_ID[a.id] && typeof a.min === 'number' &&
+    a.min >= 5 && a.min <= 9.5 && typeof a.ativo === 'boolean';
+}
+function temAlerta(id){ return S.alertas.some(function(a){ return a.id === id; }); }
+function getAlerta(id){ for (var i = 0; i < S.alertas.length; i++) if (S.alertas[i].id === id) return S.alertas[i]; return null; }
+function isFav(id){ return S.favoritos.indexOf(id) >= 0; }
+/* Rótulo de dia no padrão do SPEC: "qua, 25" */
+function diaTxt(d){
+  var dt = new Date(); dt.setDate(dt.getDate() + d);
+  return DIAS_CURTO[dt.getDay()].toLowerCase() + ', ' + dt.getDate();
+}
+function addAlerta(id){
+  if (!SPOT_BY_ID[id] || temAlerta(id)) return false;
+  S.alertas.push({ id: id, min: 7, ativo: true }); salvarAlertas(); return true;
+}
+/* Primeira hora (0..167) com nota >= mínimo, entre 5h e 18h, a partir de agora e com o pico visível. -1 se nenhuma. */
+function proximoAlerta(a){
+  var sp = SPOT_BY_ID[a.id];
+  for (var t = S.hora; t < HOURLY.length; t++){
+    var h = t % 24;
+    if (h < 5 || h > 18) continue;
+    if (SCORE[sp.id][t].nota >= a.min && !motivoOculto(sp, t, S.nivel)) return t;
+  }
+  return -1;
+}
+/* Top 5 janelas de 3 h da semana: no máximo uma por pico e dia, só com o pico visível nas 3 horas. */
+function janelasSemana(){
+  var out = [];
+  for (var d = 0; d < 7; d++){
+    for (var k = 0; k < SPOTS.length; k++){
+      var sp = SPOTS[k], best = null;
+      if (S.regiao !== 'todas' && sp.regiao !== S.regiao) continue;
+      for (var s = 5; s <= 15; s++){
+        var t0 = d * 24 + s, ok = true, soma = 0;
+        for (var j = 0; j < 3; j++){
+          if (motivoOculto(sp, t0 + j, S.nivel)){ ok = false; break; }
+          soma += SCORE[sp.id][t0 + j].nota;
+        }
+        if (!ok) continue;
+        var media = soma / 3;
+        if (!best || media > best.raw + 1e-9) best = { spot: sp, dia: d, ini: s, fim: s + 3, raw: media, media: round1(media) };
+      }
+      if (best) out.push(best);
+    }
+  }
+  out.sort(function(a, b){ return b.raw - a.raw; });
+  return out.slice(0, 5);
+}
+function favBtn(id){
+  var sp = SPOT_BY_ID[id], on = S.pro && isFav(id);
+  var rot = on ? 'Remover ' + sp.nome + ' dos favoritos' : 'Favoritar ' + sp.nome;
+  return '<button class="fav-btn" data-act="fav" data-id="' + id + '" aria-pressed="' + on + '" aria-label="' + esc(rot) + '">' + ico('i-star') + '</button>';
+}
+/* Botão da ficha: no Pro cria ou abre o alerta; no grátis segue abrindo a folha Pro. */
+function botaoAlerta(sp){
+  if (!S.pro) return '<button class="btn btn-primary" data-act="pro">Me avise quando ficar bom</button>';
+  var a = getAlerta(sp.id);
+  if (a) return '<button class="btn btn-primary" data-act="alerta-ir">' + (a.ativo ? 'Alerta ativo · editar' : 'Alerta desligado · editar') + '</button>';
+  return '<button class="btn btn-primary" data-act="alerta-cria" data-id="' + sp.id + '">Me avise quando ficar bom</button>';
+}
+function planoCardHTML(){
+  var corpo = S.pro
+    ? '<p class="hint">Pro · teste simulado</p><button class="btn btn-ghost btn-sm" data-act="plano-free">Voltar ao plano grátis</button>'
+    : '<p class="hint">Grátis</p><button class="btn btn-primary btn-sm" data-act="ir-alertas">Conhecer o Pro</button>';
+  return '<section class="card plano-card" style="margin-top:14px"><h2>Plano</h2>' + corpo + '</section>';
+}
+
+/* ================= Hoje ================= */
+function heroHTML(item){
+  if (!item) return '<div class="card vazio">Nenhum pico visível para o seu nível nesta região. Tente outro nível no Perfil.</div>';
+  var sp = item.spot, s = item.s, f = FORECAST[sp.id][S.ref], cor = corNota(s.nota), jan = melhorJanela(sp.id, S.base);
+  var rotulo = S.night ? (S.refWhen === 'hoje' ? 'Melhor hoje cedo' : 'Melhor amanhã cedo')
+    : (S.refDia ? 'Melhor ' + S.refDia + ' · ' + S.hd + 'h' : 'Melhor agora · ' + S.hora + 'h');
+  var aviso = S.night ? '<p class="aviso-noite">' + ico('i-sun') + 'Está escuro agora · previsão para ' + S.refWhen + ' às ' + S.hd + 'h</p>' : '';
+  return '<div class="card hero tap" role="button" tabindex="0" data-act="spot" data-id="' + sp.id + '" style="--hc:' + cor + ';--hc-a:' + hexA(cor, 0.24) + '">' +
+    ondas('abs') +
+    '<div class="hero-body">' + aviso +
+    '<div class="hero-top"><span class="eyebrow">' + rotulo + '</span>' +
+    '<span class="pill" style="background:' + pillBg(s.nota) + '">' + rotuloNota(s.nota) + '</span></div>' +
+    '<div class="hero-main">' + ring(s.nota, 140, 56, 13) +
+    '<div class="hero-txt"><h3>' + esc(sp.nome) + '</h3><p class="sub">' + esc(sp.cidade) + ' · ' + sp.tempoCarroMin + ' min de carro</p>' +
+    '<p class="hero-why">' + esc(porQue(s, sp)) + '</p></div></div>' +
+    sparkBig(sp.id, S.base, S.hd) +
+    '<div class="metrics">' +
+      mt('i-ruler', fmt1(f.altura) + ' m', 'altura') +
+      mt('i-clock', fmt1(f.periodo) + ' s', 'período') +
+      mt('i-wind', f.ventoVel + ' km/h', TIPO_NOME[s.tipo] + ' · ' + cardinal(f.ventoDir)) +
+      mt('i-tide', fmt2(f.mare) + ' m', 'maré ' + f.mareFase) +
+    '</div>' +
+    '<p class="janela">' + ico('i-clock') + '<span>Melhor janela ' + jan.ini + 'h–' + jan.fim + 'h · ' + fmt1(jan.media) + '</span></p>' +
+    '<span class="btn-link">Ver ficha ' + ico('i-chev') + '</span>' +
+    '</div></div>';
+}
+function rowHTML(item){
+  var sp = item.spot, s = item.s, f = FORECAST[sp.id][S.ref], fav = S.pro && isFav(sp.id);
+  return '<div class="row">' +
+    '<div class="row-main" role="button" tabindex="0" data-act="spot" data-id="' + sp.id + '" aria-label="' + esc(sp.nome) + ', nota ' + fmt1(s.nota) + ', ' + rotuloNota(s.nota) + '">' +
+    '<div class="rcol">' + ring(s.nota, 52, 18, 5) + '<span class="rot">' + rotuloNota(s.nota) + '</span></div>' +
+    '<div class="info"><h4>' + esc(sp.nome) + '</h4><p class="sub">' + esc(sp.cidade) + ' · ' + sp.tempoCarroMin + ' min de carro</p>' +
+    '<div class="tags"><span class="tag">' + fmt1(f.altura) + ' m</span><span class="tag">' + entradaTxt(f.fator) + '</span>' + tagVento(s, f) +
+    (fav ? '<span class="tag fav">Favorito</span>' : '') + '</div></div></div>' +
+    '<div class="rside">' + favBtn(sp.id) + spark(sp.id, S.base) + '</div></div>';
+}
+
+function vHoje(){
+  var t = S.ref, d0 = new Date();
+  var lst = visiveis(t, S.nivel, S.regiao);
+  var ocultos = listar(t, S.nivel, S.regiao).filter(function(x){ return x.motivo; });
+  var dataStr = DIAS_LONGO[d0.getDay()] + ', ' + d0.getDate() + ' de ' + MESES[d0.getMonth()];
+  var h = '<div class="banner">Protótipo · dados fictícios</div>';
+
+  h += '<header class="hoje-head">' +
+    '<div class="topbar"><span class="brand">' + ico('i-wave') + APP + (S.pro ? '<span class="pill pro-pill">PRO</span>' : '') + '</span>' +
+    '<span class="chip">' + ico(S.loc === 'GPS' ? 'i-target' : 'i-map') + esc(S.loc) + '</span></div>' +
+    '<p class="eyebrow" style="margin-top:18px">Agora · ' + S.hora + 'h</p>' +
+    '<h1>' + saudacao(S.hora) + ', surfista</h1>' +
+    '<p class="local">Grande Vitória, ES <span class="dotsep"></span> ' + dataStr + '</p>' +
+    ondas() + '</header>';
+
+  h += '<div class="days" role="list" aria-label="Dias da previsão">';
+  for (var i = 0; i < 7; i++){
+    var dt = new Date(d0.getTime());
+    dt.setDate(d0.getDate() + i);
+    if (S.pro){
+      var sel = S.dia === i;
+      h += '<button class="day' + (sel ? ' on' : '') + '" role="listitem" data-act="dia" data-v="' + i + '"' + (sel ? ' aria-current="date"' : '') + '>' +
+        (i === 0 ? '<span>Hoje</span>' : '<span>' + DIAS_CURTO[dt.getDay()] + '</span>') + '<b>' + dt.getDate() + '</b>' +
+        (i === 0 ? '<span>' + DIAS_CURTO[dt.getDay()] + '</span>' : '') + '</button>';
+    } else if (i === 0){
+      h += '<button class="day on" role="listitem" aria-current="date"><span>Hoje</span><b>' + dt.getDate() + '</b><span>' + DIAS_CURTO[dt.getDay()] + '</span></button>';
+    } else {
+      h += '<button class="day" role="listitem" data-act="pro" aria-label="' + DIAS_LONGO[dt.getDay()] + ' ' + dt.getDate() + ', disponível no ' + APP + ' Pro">' +
+        '<span>' + DIAS_CURTO[dt.getDay()] + '</span><b>' + dt.getDate() + '</b>' + ico('i-lock', 'lk') + '<span class="pro">PRO</span></button>';
+    }
+  }
+  h += '</div>';
+
+  h += heroHTML(lst[0]);
+
+  h += '<section class="sec"><div class="sec-head"><h2>' + (S.refDia ? 'Ranking do dia' : 'Ranking de agora') + '</h2><span>' + lst.length + (lst.length === 1 ? ' pico visível' : ' picos visíveis') + '</span></div>';
+  if (S.refDia) h += '<p class="previsao-dia">Previsão para ' + S.refDia + '</p>';
+  if (lst.length > 1){
+    var resto = lst.slice(1);
+    if (S.pro) resto = resto.filter(function(x){ return isFav(x.spot.id); }).concat(resto.filter(function(x){ return !isFav(x.spot.id); }));
+    h += '<div class="lista' + (S._fadeList ? ' fade' : '') + '">' + resto.map(rowHTML).join('') + '</div>';
+  } else {
+    h += '<p class="vazio">Nenhum outro pico visível para o seu nível nesta região.</p>';
+  }
+  h += '</section>';
+
+  if (ocultos.length){
+    h += '<section class="sec"><button class="oculto" data-act="oculto" aria-expanded="' + S.ocultosAbertos + '">' +
+      '<span>' + ocultos.length + (ocultos.length === 1 ? ' pico oculto' : ' picos ocultos') + ' para o seu nível</span>' + ico('i-down') + '</button>';
+    if (S.ocultosAbertos){
+      h += '<ul class="motivos">' + ocultos.map(function(x){
+        return '<li>' + esc(x.spot.nome) + '<span>' + esc(x.motivo) + '</span></li>';
+      }).join('') + '</ul>';
+    }
+    h += '</section>';
+  }
+  return h;
+}
+
+/* ================= Mapa (R2.3) ================= */
+var VIEWS = {
+  estado: { lonMin: -41.5, w: 3.6, latMax: -18.0, h: 5.0 },
+  gv: { lonMin: -40.48, w: 0.8, latMax: -19.85, h: 1.0 }
+};
+var CIDADES = [['Vitória', -20.30], ['Vila Velha', -20.42], ['Serra', -20.13], ['Guarapari', -20.66], ['Linhares', -19.40]];
+var PITCH = 46, PAD = 20, HMIN = 448, PILL_X = 52;
+function proj(v, lon, lat){ return { x: (lon - v.lonMin) / v.w * 100, y: (v.latMax - lat) / v.h }; }   // y em fração da altura
+function costaEm(lat){
+  for (var i = 0; i < COSTA.length - 1; i++){
+    var a = COSTA[i], b = COSTA[i + 1];
+    if (a[1] >= lat && lat >= b[1]){
+      var t = (a[1] - lat) / (a[1] - b[1]);
+      return a[0] + (b[0] - a[0]) * t;
+    }
+  }
+  return COSTA[COSTA.length - 1][0];
+}
+function mapaSVG(v){
+  var vb = v.lonMin + ' ' + (-v.latMax) + ' ' + v.w + ' ' + v.h;
+  var poly = [[-39.6, -17.5]].concat(COSTA, [[-40.95, -21.8], [-50, -21.8], [-50, -17.5]]);
+  var terra = 'M' + poly.map(function(p){ return p[0] + ' ' + (-p[1]); }).join(' L') + ' Z';
+  var costa = 'M' + COSTA.map(function(p){ return p[0] + ' ' + (-p[1]); }).join(' L');
+  return '<svg viewBox="' + vb + '" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path class="terra" d="' + terra + '"/><path class="costa" d="' + costa + '"/></svg>';
+}
+function vMapa(){
+  var t = S.ref, v = VIEWS[S.mapa] || VIEWS.estado;
+  var lst = visiveis(t, S.nivel, S.regiao);
+  var best = lst[0];
+  // pontos dentro da área útil: fora da margem vertical e à esquerda da coluna de pílulas
+  var inV = lst.filter(function(x){
+    var p = proj(v, x.spot.lon, x.spot.lat);
+    return p.y >= 0.03 && p.y <= 0.97 && p.x >= 6.5 && p.x <= PILL_X - 2;
+  });
+  var order = inV.slice().sort(function(a, b){ return b.spot.lat - a.spot.lat; });  // norte para sul
+  var n = order.length;
+  var H = Math.max(HMIN, n * PITCH + 2 * PAD);
+  var lines = '', dots = '', pills = '';
+  order.forEach(function(x, i){
+    var p = proj(v, x.spot.lon, x.spot.lat), isBest = best && x.spot.id === best.spot.id;
+    var py = p.y * H, top = PAD + i * PITCH, cy = top + PITCH / 2 - 2;
+    var n1 = fmt1(x.s.nota);
+    lines += '<line x1="' + p.x.toFixed(2) + '" y1="' + py.toFixed(1) + '" x2="' + PILL_X + '" y2="' + cy.toFixed(1) + '"/>';
+    dots += '<span class="pt' + (isBest ? ' best' : '') + '" style="left:' + p.x.toFixed(2) + '%;top:' + py.toFixed(1) + 'px;--pc:' + corNota(x.s.nota) + '"></span>';
+    pills += '<button class="pl' + (isBest ? ' best' : '') + '" style="top:' + top + 'px;height:' + (PITCH - 4) + 'px" data-act="pin" data-id="' + x.spot.id + '" aria-pressed="' + (S.pin === x.spot.id) + '" aria-label="' + esc(x.spot.nome) + ', nota ' + n1 + '">' +
+      '<span class="pn" style="background:' + pillBg(x.s.nota) + '">' + n1 + '</span><span class="pnome">' + esc(x.spot.nome) + '</span></button>';
+  });
+  var cids = '';
+  CIDADES.forEach(function(c){
+    var lon = costaEm(c[1]), p = proj(v, lon, c[1]);
+    if (p.y < 0.02 || p.y > 0.98) return;
+    var xpx = p.x / 100 * 358;
+    if (xpx - 22 - c[0].length * 7.5 < 12) return;   // margem mínima de 12 px à esquerda
+    cids += '<span class="cid" style="left:calc(' + p.x.toFixed(2) + '% - 22px);top:' + (p.y * H).toFixed(1) + 'px">' + esc(c[0]) + '</span>';
+  });
+  var pinned = S.pin ? lst.filter(function(x){ return x.spot.id === S.pin; })[0] : null;
+  var leg = [['Fraco', '#FF6B5B', '0–3,9'], ['Regular', '#FFB547', '4–5,9'], ['Bom', '#C6E85A', '6–7,4'],
+    ['Muito bom', '#3EE0B5', '7,5–8,9'], ['Clássico', 'linear-gradient(90deg,#3EE0B5,#5AA9FF)', '9–10']];
+  var rotuloMapa = S.night ? 'Previsão para ' + S.refWhen + ' às ' + S.hd + 'h'
+    : (S.refDia ? 'Previsão para ' + S.refDia + ' às ' + S.hd + 'h' : 'Agora · ' + S.hora + 'h');
+  return '<header class="mapa-head"><p class="eyebrow">' + rotuloMapa + '</p><h1>Mapa dos picos</h1>' +
+    '<p class="lead">Notas pico a pico, de norte para sul. ' + n + (n === 1 ? ' pico no mapa.' : ' picos no mapa.') + '</p></header>' +
+    '<div class="seg" role="group" aria-label="Área do mapa" style="margin-top:14px">' +
+      '<button data-act="mapa-modo" data-v="gv" aria-pressed="' + (S.mapa === 'gv') + '">Grande Vitória</button>' +
+      '<button data-act="mapa-modo" data-v="estado" aria-pressed="' + (S.mapa !== 'gv') + '">Estado todo</button></div>' +
+    '<div class="mapa" style="margin-top:14px;height:' + H + 'px">' + mapaSVG(v) +
+      '<span class="chip aviso-ill">' + ico('i-map') + 'Mapa ilustrativo</span>' +
+      '<svg class="lideres" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + lines + '</svg>' +
+      cids + dots + pills + '</div>' +
+    (pinned ? miniHTML(pinned) : '') +
+    '<div class="legenda">' + leg.map(function(l){
+      return '<span><i style="background:' + l[1] + '"></i>' + l[0] + ' · ' + l[2] + '</span>';
+    }).join('') + '</div>';
+}
+function miniHTML(x){
+  var sp = x.spot, s = x.s, f = FORECAST[sp.id][S.ref];
+  return '<div class="mini">' +
+    '<div class="mini-top"><div style="min-width:0"><h4>' + esc(sp.nome) + '</h4><p class="sub">' + esc(sp.cidade) + ' · ' + sp.tempoCarroMin + ' min de carro</p></div>' +
+    '<span class="pill" style="background:' + pillBg(s.nota) + '">' + fmt1(s.nota) + ' · ' + rotuloNota(s.nota) + '</span></div>' +
+    '<div class="tags"><span class="tag">' + fmt1(f.altura) + ' m</span><span class="tag">' + entradaTxt(f.fator) + '</span>' + tagVento(s, f) + '</div>' +
+    '<div class="mini-acoes"><button class="btn btn-primary" data-act="spot" data-id="' + sp.id + '">Ver pico</button>' +
+    '<button class="ico-btn" data-act="pin-close" aria-label="Fechar">' + ico('i-x') + '</button></div></div>';
+}
+
+/* ================= Pro (alertas e folha) ================= */
+function vPro(sheet){
+  var BEN = [['i-bell', 'Alertas quando seu pico ficar bom', 'Aviso no celular na janela certa.'],
+    ['i-cal', 'Previsão de 7 dias', 'Veja a semana inteira, hora a hora.'],
+    ['i-clock', 'Janelas ideais da semana', 'As três melhores horas de cada dia.'],
+    ['i-star', 'Picos favoritos', 'Acompanhe só os que importam para você.']];
+  var PREV = ['Barra do Jucu · amanhã 6h–9h · 8,4', 'Setiba · sábado 7h–10h · 8,9', 'Manguinhos · quinta 8h–11h · 7,6'];
+  var PLANOS = [['mensal', 'Mensal', 'R$ 14,90', 'por mês', ''], ['anual', 'Anual', 'R$ 119,90', 'por ano', 'economize 33%']];
+  var h = '';
+  if (sheet) h += '<div class="grab"></div><button class="sheet-x" data-act="pro-close" aria-label="Fechar">' + ico('i-x') + '</button>';
+  else h += '<p class="eyebrow" style="margin-top:20px">Alertas · PRO</p>';
+  h += '<section class="pro-hero">' + ondas('abs') +
+    '<span class="pill">' + APP + ' Pro</span>' +
+    '<h2>Nunca perca o pico certo</h2>' +
+    '<p>Alertas, previsão de 7 dias e janelas ideais direto no seu celular.</p></section>';
+  h += '<ul class="ben-list">' + BEN.map(function(b){
+    return '<li class="ben"><span class="ico">' + ico(b[0]) + '</span><div><b>' + b[1] + '</b><span>' + b[2] + '</span></div></li>';
+  }).join('') + '</ul>';
+  h += '<div class="previa" aria-label="Prévia de alertas"><p class="eyebrow">Prévia dos alertas</p>' + PREV.map(function(p){
+    return '<div class="previa-card"><span class="bl">' + esc(p) + '</span><span class="lk">' + ico('i-lock') + 'Pro</span></div>';
+  }).join('') + '</div>';
+  h += '<div class="planos" role="radiogroup" aria-label="Plano">' + PLANOS.map(function(p){
+    var on = S.plano === p[0];
+    return '<button class="plano" role="radio" aria-checked="' + on + '" data-act="plano" data-v="' + p[0] + '">' +
+      '<span class="radio"></span><span class="p-txt"><b>' + p[1] + (p[4] ? '<em class="economia">' + p[4] + '</em>' : '') + '</b><span>' + p[3] + '</span></span>' +
+      '<span class="p-val">' + p[2] + '</span></button>';
+  }).join('') + '</div>';
+  h += '<button class="btn btn-primary" data-act="trial" style="margin-top:18px">Testar 7 dias grátis</button>';
+  h += '<p class="legal">Protótipo: nada será cobrado.</p>';
+  h += '<p class="rodape">Cancele quando quiser · Termos · Privacidade</p>';
+  return h;
+}
+function vAlertas(){ return S.pro ? vAlertasPro() : vPro(false); }
+
+/* R3.4: aba Alertas no modo Pro */
+function vAlertasPro(){
+  var jan = janelasSemana(), n = S.alertas.length;
+  var h = '<header class="page-head"><p class="eyebrow">Alertas</p>' +
+    '<div class="topbar" style="margin-top:10px"><h1>Seus alertas</h1><span class="pill pro-pill">PRO</span></div></header>';
+  h += '<section class="sec"><div class="sec-head"><h2>Janelas ideais da semana</h2></div>' +
+    '<p class="hint">As 5 melhores janelas de 3 h, entre 5h e 18h, nos picos visíveis. Toque para ver no Hoje.</p>';
+  h += jan.length ? '<div class="lista">' + jan.map(janelaHTML).join('') + '</div>' : '<p class="vazio">Nenhuma janela neste nível e região.</p>';
+  h += '</section>';
+  h += '<section class="sec"><div class="sec-head"><h2>Alertas</h2><span>' + n + (n === 1 ? ' alerta' : ' alertas') + '</span></div>';
+  h += n ? '<div class="alertas">' + S.alertas.map(alertaHTML).join('') + '</div>' : '<p class="vazio">Nenhum alerta. Adicione um pico abaixo.</p>';
+  h += '<button class="btn btn-ghost" data-act="alerta-add-open" style="margin-top:12px">+ Adicionar alerta</button></section>';
+  h += '<p class="rodape">Os alertas chegam por notificação no app final. Aqui é uma simulação.</p>';
+  return h;
+}
+function janelaHTML(j){
+  var sp = j.spot, rot = diaTxt(j.dia);
+  return '<div class="row" role="button" tabindex="0" data-act="janela" data-id="' + sp.id + '" data-v="' + j.dia + '" aria-label="' + esc(sp.nome) + ', ' + esc(rot) + ', ' + j.ini + 'h às ' + j.fim + 'h, média ' + fmt1(j.media) + '">' +
+    '<div class="rcol">' + ring(j.media, 52, 18, 5) + '<span class="rot">' + rotuloNota(j.media) + '</span></div>' +
+    '<div class="info"><h4>' + esc(sp.nome) + '</h4><p class="sub">' + esc(rot) + ' · ' + j.ini + 'h–' + j.fim + 'h</p></div>' +
+    ico('i-chev', 'chev') + '</div>';
+}
+function alertaHTML(a){
+  var sp = SPOT_BY_ID[a.id], t = a.ativo ? proximoAlerta(a) : -1, status;
+  if (!a.ativo) status = 'Alerta desligado';
+  else if (t < 0) status = 'Nada acima de ' + fmt1(a.min) + ' nos próximos 7 dias';
+  else status = 'Próximo: ' + diaTxt(Math.floor(t / 24)) + ' às ' + (t % 24) + 'h · ' + fmt1(SCORE[sp.id][t].nota);
+  return '<article class="card alerta' + (a.ativo ? '' : ' off') + '">' +
+    '<div class="alerta-top"><div class="alerta-nome"><h3>' + esc(sp.nome) + '</h3><p class="sub">' + esc(sp.cidade) + ' · ' + sp.tempoCarroMin + ' min de carro</p></div>' +
+    '<button class="switch" role="switch" aria-checked="' + a.ativo + '" data-act="alerta-on" data-id="' + a.id + '" aria-label="Alerta de ' + esc(sp.nome) + '"><i></i></button>' +
+    '<button class="ico-btn" data-act="alerta-del" data-id="' + a.id + '" aria-label="Remover alerta de ' + esc(sp.nome) + '">' + ico('i-trash') + '</button></div>' +
+    '<div class="alerta-min"><span>Avisar quando passar de</span><div class="stepper">' +
+      '<button data-act="alerta-min" data-id="' + a.id + '" data-v="-1" title="Diminuir"' + (a.min <= 5 ? ' disabled' : '') + '>−</button>' +
+      '<b>' + fmt1(a.min) + '</b>' +
+      '<button data-act="alerta-min" data-id="' + a.id + '" data-v="1" title="Aumentar"' + (a.min >= 9.5 ? ' disabled' : '') + '>+</button></div></div>' +
+    '<p class="alerta-status">' + esc(status) + '</p></article>';
+}
+/* Folha "Adicionar alerta": picos visíveis que ainda não têm alerta */
+function vAdd(){
+  var lst = visiveis(S.ref, S.nivel, S.regiao).filter(function(x){ return !temAlerta(x.spot.id); });
+  var h = '<div class="grab"></div><button class="sheet-x" data-act="pro-close" aria-label="Fechar">' + ico('i-x') + '</button>' +
+    '<header class="sheet-head"><p class="eyebrow">Alertas · PRO</p><h2>Adicionar alerta</h2>' +
+    '<p class="hint">Escolha um pico visível para o seu nível. O alerta começa em 7,0.</p></header>';
+  if (!lst.length) return h + '<p class="vazio">Todos os picos visíveis já têm alerta.</p>';
+  return h + lst.map(function(x){
+    return '<div class="alvo" role="button" tabindex="0" data-act="alerta-add" data-id="' + x.spot.id + '" aria-label="Criar alerta para ' + esc(x.spot.nome) + '">' +
+      ring(x.s.nota, 44, 15, 4) +
+      '<div class="info"><h4>' + esc(x.spot.nome) + '</h4><p class="sub">' + esc(x.spot.cidade) + ' · nota ' + fmt1(x.s.nota) + '</p></div>' + ico('i-plus') + '</div>';
+  }).join('');
+}
+
+/* ================= Perfil ================= */
+function seg(opts, cur, act){
+  return '<div class="seg perfil-seg" role="group">' + opts.map(function(o){
+    return '<button aria-pressed="' + (cur === o[0]) + '" data-act="' + act + '" data-v="' + o[0] + '">' + o[1] + '</button>';
+  }).join('') + '</div>';
+}
+function vPerfil(){
+  var nVis = visiveis(S.ref, S.nivel, S.regiao).length;
+  var niv = NIVEIS.map(function(n){
+    return '<button class="nv-opt" aria-pressed="' + (S.nivel === n) + '" data-act="nivel" data-v="' + n + '">' +
+      '<span class="ico">' + svgRef(NIVEL_ICO[n], 26) + '</span><span><b>' + NIVEL_NOME[n] + '</b><span>' + NIVEL_DESC[n] + '</span></span></button>';
+  }).join('');
+  var regs = Object.keys(REGIOES).map(function(k){
+    return '<button aria-pressed="' + (S.regiao === k) + '" data-act="regiao" data-v="' + k + '">' + REGIOES[k] + '</button>';
+  }).join('');
+  return '<header class="page-head"><p class="eyebrow">Seu perfil</p><h1>Perfil</h1><p class="lead">Ajuste o mar que você quer ver.</p></header>' +
+    '<section class="card resumo" aria-label="Resumo">' +
+      '<div><span>Nível</span><b>' + NIVEL_NOME[S.nivel] + '</b></div>' +
+      '<div><span>Região</span><b>' + REGIOES[S.regiao] + '</b></div>' +
+      '<div><span>Vendo agora</span><b>' + nVis + (nVis === 1 ? ' pico' : ' picos') + '</b></div>' +
+    '</section>' +
+    planoCardHTML() + '<section class="card" style="margin-top:14px"><h2>Nível</h2><p class="hint">Trocar o nível recalcula a nota e o ranking na hora.</p><div class="nv-opts">' + niv + '</div></section>' +
+    '<section class="card" style="margin-top:14px"><h2>Localização</h2><p class="hint">Aparece no chip de local da tela Hoje.</p>' + seg([['GPS', 'GPS'], ['Região', 'Região']], S.loc, 'loc') + '</section>' +
+    '<section class="card" style="margin-top:14px"><h2>Região</h2><p class="hint">Filtra o ranking e o mapa.</p><div class="chips">' + regs + '</div></section>' +
+    '<section class="card" style="margin-top:14px"><h2>Tema</h2><p class="hint">Auto segue o tema do celular.</p>' + seg([['auto', 'Auto'], ['claro', 'Claro'], ['escuro', 'Escuro']], S.tema, 'tema') + '</section>' +
+    '<section class="card sobre" style="margin-top:14px"><h2>Sobre o protótipo</h2>' +
+      '<p>Dados fictícios. A previsão do mar é simulada, e a nota cruza essa previsão com a ficha de cada pico: tamanho, direção, período, vento e maré.</p></section>' +
+    '<button class="btn btn-ghost" data-act="onb-open" style="margin-top:14px">Rever apresentação</button>';
+}
+
+/* ================= Onboarding ================= */
+function vOnb(){
+  var cards = NIVEIS.map(function(n){
+    var on = S.onbSel === n;
+    return '<button class="nv" role="radio" aria-checked="' + on + '" data-act="onb-sel" data-v="' + n + '">' +
+      '<span class="ico">' + svgRef(NIVEL_ICO[n], 40) + '</span>' +
+      '<span><b>' + NIVEL_NOME[n] + '</b><span>' + NIVEL_DESC[n] + '</span></span></button>';
+  }).join('');
+  return '<div class="onb-art">' + ondas('abs') +
+    '<div class="onb-logo" style="margin-top:6px">' + ico('i-wave') + APP + '</div>' +
+    '<p class="onb-slogan">O mar certo, na hora certa.</p></div>' +
+    '<div><h2>Qual é o seu nível?</h2><p class="hint" style="margin:8px 0 0">A nota de cada pico considera o que é seguro para você.</p></div>' +
+    '<div class="onb-cards" role="radiogroup" aria-label="Nível">' + cards + '</div>' +
+    '<button class="btn btn-primary" data-act="onb-done"' + (S.onbSel ? '' : ' disabled') + '>Ver o mar de hoje</button>';
+}
+
+/* ================= Ficha ================= */
+function grafHoras(sp, base, jan, hd){
+  var W = 330, base0 = 118, bw = 14, step = 22, out = '';
+  var dy = 22;   // linha própria para o rótulo "Melhor janela"
+  if (jan){
+    out += '<rect x="' + ((jan.ini - 5) * step + 1) + '" y="' + dy + '" width="' + (3 * step - 2) + '" height="' + base0 + '" rx="8" style="fill:var(--accent);opacity:.14;stroke:var(--accent);stroke-width:1;stroke-opacity:.55"/>';
+    out += '<text class="band" x="' + ((jan.ini - 5) * step + 6) + '" y="14">Melhor janela</text>';
+  }
+  out += '<g transform="translate(0,' + dy + ')">';
+  out += '<line x1="0" x2="' + W + '" y1="' + base0 + '" y2="' + base0 + '" style="stroke:var(--border)" stroke-width="1"/>';
+  for (var i = 0; i < 15; i++){
+    var hh = 5 + i, n = SCORE[sp.id][base + hh].nota, bh = Math.max(4, n / 10 * base0), x = i * step + 4, y = base0 - bh, now = hh === hd;
+    // a barra da hora atual é mais larga para o valor caber dentro dela
+    var bx = now ? x - 3 : x, bwi = now ? bw + 6 : bw;
+    out += '<rect x="' + bx + '" y="' + y.toFixed(1) + '" width="' + bwi + '" height="' + bh.toFixed(1) + '" rx="5" style="fill:' + corNota(n) + (now ? ';stroke:var(--text);stroke-width:2' : '') + '"/>';
+    if (now) out += '<text class="now" x="' + (x + bw / 2) + '" y="' + (y + 14).toFixed(1) + '" text-anchor="middle" style="fill:#06201A;font-size:9px">' + fmt1(n) + '</text>';
+    out += '<text class="' + (now ? 'now' : '') + '" x="' + (x + bw / 2) + '" y="' + (base0 + 18) + '" text-anchor="middle">' + hh + '</text>';
+  }
+  out += '</g>';
+  return '<div class="chart"><svg viewBox="0 0 ' + W + ' ' + (dy + base0 + 24) + '" aria-label="Nota por hora, de 5h a 19h" role="img">' + out + '</svg></div>';
+}
+function grafMare(sp, base, t, hd){
+  var W = 330, H = 140, top = 18, bot = 112;
+  function yOf(m){ return bot - (m - 0.1) / 1.4 * (bot - top); }
+  var pts = [], i;
+  for (i = 0; i <= 96; i++){ var x = i / 4; pts.push([x / 24 * W, yOf(mareRaw(base + x))]); }
+  var d = pts.map(function(p, k){ return (k ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+  var area = d + ' L' + W + ' ' + bot + ' L0 ' + bot + ' Z';
+  var grid = [0, 6, 12, 18, 24].map(function(hh){
+    var gx = hh / 24 * W;
+    return '<line x1="' + gx + '" x2="' + gx + '" y1="' + top + '" y2="' + bot + '" style="stroke:var(--border)" stroke-width="1"/>' +
+      '<text x="' + gx + '" y="' + (H - 2) + '" text-anchor="' + (hh === 0 ? 'start' : (hh === 24 ? 'end' : 'middle')) + '">' + hh + 'h</text>';
+  }).join('');
+  var f = FORECAST[sp.id][t], nx = hd / 24 * W, ny = yOf(f.mare);
+  var smp = []; for (i = 0; i <= 480; i++){ var xx = i / 20; smp.push([xx, mareRaw(base + xx)]); }
+  var ext = [];
+  for (i = 1; i < smp.length - 1; i++){
+    var a = smp[i - 1][1], b = smp[i][1], c = smp[i + 1][1];
+    if (b > a && b >= c) ext.push({ tipo: 'Preamar', x: smp[i][0], m: b });
+    else if (b < a && b <= c) ext.push({ tipo: 'Baixa-mar', x: smp[i][0], m: b });
+  }
+  var extTxt = ext.map(function(e){
+    return '<div>' + ico('i-tide') + '<span>' + e.tipo + ' ' + hhmm(e.x) + ' · ' + fmt2(e.m) + ' m</span></div>';
+  }).join('');
+  return '<div class="mare"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Curva da maré de 0h a 24h">' + grid +
+    '<path d="' + area + '" style="fill:var(--accent);opacity:.14"/>' +
+    '<path d="' + d + '" fill="none" style="stroke:var(--accent)" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<line x1="' + nx.toFixed(1) + '" x2="' + nx.toFixed(1) + '" y1="' + top + '" y2="' + bot + '" style="stroke:var(--text-2)" stroke-dasharray="3 3" stroke-width="1"/>' +
+    '<circle cx="' + nx.toFixed(1) + '" cy="' + ny.toFixed(1) + '" r="6" style="fill:var(--accent);stroke:var(--bg)" stroke-width="3"/>' +
+    '</svg><div class="mare-info"><div>' + ico('i-clock') + '<span>Às ' + hd + 'h: ' + fmt2(f.mare) + ' m, maré ' + f.mareFase + '</span></div>' + extTxt + '</div></div>';
+}
+function vFicha(sp){
+  var t = S.ref, hd = S.hd, base = S.base, sc = SCORE[sp.id][t], cor = corNota(sc.nota), jan = melhorJanela(sp.id, base), motivo = motivoOculto(sp, t, S.nivel);
+  var sw = sp.swellIdeal, PP = sp.periodoIdeal, T = sp.tamanho, M = sp.mareIdeal;
+  var h = '<header class="spot-top" style="--hc:' + cor + ';--hc-a:' + hexA(cor, 0.3) + '">' +
+    '<div class="spot-nav"><button class="voltar" data-act="spot-close" aria-label="Voltar">' + ico('i-back') + 'Voltar</button>' + favBtn(sp.id) + '</div>' +
+    '<div class="spot-head">' + ring(sc.nota, 120, 40, 11) +
+    '<div class="sh-txt"><span class="pill" style="background:' + pillBg(sc.nota) + '">' + rotuloNota(sc.nota) + '</span>' +
+    '<h1>' + esc(sp.nome) + '</h1><p class="sub">' + esc(sp.cidade) + ' · ' + REGIOES[sp.regiao] + '</p></div></div>';
+  if (sp.modelo) h += '<span class="badge-modelo">Ficha-modelo · em validação</span>';
+  h += '<p class="hero-why spot-why">' + esc(porQue(sc, sp)) + '</p>';
+  if (motivo) h += '<p class="aviso-ficha">' + ico('i-alert') + '<span>Oculto para o seu nível: ' + esc(motivo) + '.</span></p>';
+  h += '<p class="spot-desc">' + esc(sp.descricao) + '</p></header>';
+
+  h += '<div class="spot-body">';
+  h += '<section class="card"><div class="card-h"><h2>Por que essa nota</h2><span>' + fmt1(sc.nota) + ' de 10 · ' + (S.night ? S.refWhen + ' ' : (S.refDia ? S.refDia + ' · ' : '')) + hd + 'h</span></div>';
+  ORDEM_CRIT.forEach(function(kv){
+    var k = kv[0], v = sc.c[k], pct = Math.round(v * 100);
+    h += '<div class="crit"><div class="crit-h"><span>' + kv[1] + '<em>peso ' + Math.round(PESOS[k] * 100) + '%</em></span><b>' + pct + '%</b></div>' +
+      '<div class="bar"><i style="width:' + pct + '%;background:' + corNota(v * 10) + '"></i></div><p>' + esc(sc.tx[k]) + '</p></div>';
+  });
+  var teto = sc.teto && sc.nota !== sc.prec ? ' → ' + fmt1(sc.nota) + ' (teto de ' + sc.teto + ')' : '';
+  h += '<div class="crit pot"><div class="crit-h"><span>Potencial do pico</span><b>' + fmt1(sc.potencial * 10) + '<small> de 10</small></b></div>' +
+    '<p>' + esc(sc.txPot) + '</p>' +
+    '<p class="conta">Encaixe ' + sc.encaixe + '% × potencial ' + fmt2(sc.potencial) + ' = ' + fmt1(sc.prec) + teto + '</p></div>';
+  if (sc.ventoCap) h += '<p class="aviso-ficha">' + ico('i-alert') + '<span>' + esc(sc.ventoTxt) + '</span></p>';
+  h += '<p class="formula">Nota = 10 × encaixe (soma de peso × componente) × potencial do pico. Mar abaixo de 0,6 m limita a nota a 5,0.</p></section>';
+
+  h += '<section class="card"><div class="card-h"><h2>Nota hora a hora</h2><span>' + (S.night ? S.refWhen : (S.refDia || 'hoje')) + ' · 5h–19h</span></div>';
+  h += grafHoras(sp, base, jan, hd) + '</section>';
+
+  h += '<section class="card"><div class="card-h"><h2>Maré</h2><span>' + BANDA_NOME[bandaDe(sc.mare)] + ' · ' + sc.fase + '</span></div>' + grafMare(sp, base, t, hd) + '</section>';
+
+  h += '<section class="card"><div class="card-h"><h2>Vento</h2><span>setas: para onde o vento vai</span></div><div class="wrow">';
+  for (var k2 = 0; k2 < 24; k2++){
+    var fw = FORECAST[sp.id][base + k2];
+    h += '<div class="wi' + (k2 === hd ? ' now' : '') + '"><span>' + k2 + 'h</span>' +
+      '<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(' + fw.ventoDir + 'deg)"><use href="#i-arrow"/></svg>' +
+      '<b>' + fw.ventoVel + '</b><small>km/h</small></div>';
+  }
+  h += '</div></section>';
+
+  var ft = function(label, val, full){ return '<div' + (full ? ' class="full"' : '') + '><dt>' + label + '</dt><dd>' + esc(val) + '</dd></div>'; };
+  h += '<section class="card"><h2 style="margin-bottom:14px">Ficha técnica</h2><dl class="ft">' +
+    ft('Orientação', sp.orientacao + '° · ' + cardinal(sp.orientacao)) +
+    ft('Fundo', cap(sp.fundo)) +
+    ft('Ondulação ideal', cardinal(sw.dir) + ' (' + sw.dir + '° ±' + sw.tol + '°)') +
+    ft('Período ideal', PP.min + '–' + PP.max + ' s') +
+    ft('Tamanho ideal', fmt1(T.min) + '–' + fmt1(T.max) + ' m') +
+    ft('Vento terral', cardinal(sp.ventoTerral) + ' (' + sp.ventoTerral + '°)') +
+    ft('Maré ideal', cap(BANDA_NOME[M.nivel]) + ' · ' + (M.fase === 'qualquer' ? 'qualquer fase' : M.fase)) +
+    ft('Nível mínimo', NIVEL_NOME[sp.nivel]) +
+    ft('Distância', sp.distanciaKm + ' km · ' + sp.tempoCarroMin + ' min de carro') +
+    ft('Acesso', sp.acesso, true) +
+    '</dl><ul class="riscos">' + sp.riscos.map(function(r){ return '<li>' + ico('i-alert') + '<span>' + esc(r) + '</span></li>'; }).join('') + '</ul></section>';
+
+  h += botaoAlerta(sp);
+  h += '</div>';
+  return h;
+}
+
+/* ================= Renderização ================= */
+function renderOnb(){
+  var el = $('#onb');
+  el.hidden = !S.onb;
+  el.innerHTML = S.onb ? vOnb() : '';
+}
+function renderBoas(){
+  var el = $('#boas');
+  if (!el) return;
+  el.hidden = !S.boas;
+  el.innerHTML = S.boas
+    ? '<div class="boas-in"><div class="boas-ico">' + ico('i-check') + '</div>' +
+      '<h2>Bem-vindo ao ' + APP + ' Pro</h2>' +
+      '<p>Teste de 7 dias · simulado, nenhuma cobrança</p>' +
+      '<button class="btn btn-primary" data-act="boas-close">Ver meus alertas</button></div>'
+    : '';
+}
+function renderLayers(){
+  var layer = $('#spot'), panel = $('#spot-panel');
+  if (S.spot && SPOT_BY_ID[S.spot]){
+    var wasOpen = layer.classList.contains('open'), keep = panel.scrollTop;
+    panel.innerHTML = vFicha(SPOT_BY_ID[S.spot]);
+    panel.scrollTop = wasOpen ? keep : 0;
+    layer.classList.add('open'); layer.setAttribute('aria-hidden', 'false');
+  } else {
+    layer.classList.remove('open'); layer.setAttribute('aria-hidden', 'true');
+  }
+  var sl = $('#sheet'), sp = $('#sheet-panel');
+  if (S.sheet){
+    if (!sl.classList.contains('open')) sp.scrollTop = 0;
+    sp.innerHTML = S.sheetKind === 'add' ? vAdd() : vPro(true);
+    sl.classList.add('open'); sl.setAttribute('aria-hidden', 'false');
+  } else {
+    sl.classList.remove('open'); sl.setAttribute('aria-hidden', 'true');
+  }
+}
+function applyTema(){
+  try {
+    var root = document.documentElement;
+    if (S.tema === 'auto') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', S.tema === 'escuro' ? 'dark' : 'light');
+  } catch (e) { /* ignorado */ }
+}
+function computeOK(){
+  var t = S.ref, scoresValid = true;
+  SPOTS.forEach(function(sp){
+    SCORE[sp.id].forEach(function(s){
+      var n = s.nota;
+      if (typeof n !== 'number' || isNaN(n) || n < 0 || n > 10) scoresValid = false;
+    });
+  });
+  var hiddenFor = {};
+  NIVEIS.forEach(function(n){
+    hiddenFor[n] = SPOTS.filter(function(sp){ return !!motivoOculto(sp, S.hora, n); }).length;
+  });
+  var vis = visiveis(t, S.nivel, 'todas');
+  var ns = vis.map(function(x){ return x.s.nota; });
+  var faixas = {};
+  vis.forEach(function(x){ faixas[rotuloNota(x.s.nota)] = true; });
+  window.__TERRAL_OK__ = {
+    spots: SPOTS.length,
+    forecastHours: HOURLY.length,
+    refHour: S.ref,
+    pro: S.pro,
+    dia: S.dia,
+    alertas: S.alertas.length,
+    favoritos: S.favoritos.length,
+    scoresValid: scoresValid,
+    hiddenFor: hiddenFor,
+    best: vis.length ? { id: vis[0].spot.id, nota: vis[0].s.nota, potencial: vis[0].s.potencial } : null,
+    spread: {
+      min: ns.length ? Math.min.apply(null, ns) : null,
+      max: ns.length ? Math.max.apply(null, ns) : null,
+      faixas: Object.keys(faixas).length,
+      altos9: ns.filter(function(n){ return n >= 9; }).length
+    },
+    errors: ERR
+  };
+}
+function render(){
+  try {
+    setRef();
+    var v = $('#view'), html;
+    switch (S.tela){
+      case 'mapa': html = vMapa(); break;
+      case 'alertas': html = vAlertas(); break;
+      case 'perfil': html = vPerfil(); break;
+      default: html = vHoje();
+    }
+    v.innerHTML = html;
+    if (S._enter){ v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); S._enter = false; }
+    S._fadeList = false;
+    document.querySelectorAll('.tab').forEach(function(b){
+      if (b.getAttribute('data-v') === S.tela) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    });
+    renderLayers();
+    renderOnb();
+    renderBoas();
+    applyTema();
+    computeOK();
+  } catch (e) {
+    ERR.push('render: ' + (e && e.message));
+  }
+}
+var toastT = null;
+function toast(msg){
+  var el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ el.classList.remove('on'); }, 2600);
+}
+
+/* ================= Ações ================= */
+function go(tela){
+  if (TELAS.indexOf(tela) < 0) return false;
+  S.tela = tela; S.spot = null; S.sheet = false; S._enter = true;
+  try { window.scrollTo(0, 0); } catch (e) { /* ignorado */ }
+  render(); return true;
+}
+function openSpot(id){
+  if (!SPOT_BY_ID[id]) return false;
+  S.spot = id; render(); return true;
+}
+function closeSpot(){ S.spot = null; render(); return true; }
+function openPro(){ S.sheet = true; S.sheetKind = 'pro'; render(); }
+function openAdd(){ S.sheet = true; S.sheetKind = 'add'; render(); }
+function closePro(){ S.sheet = false; render(); }
+function setLevel(n){
+  if (NIVEIS.indexOf(n) < 0) return false;
+  S.nivel = n; sset('terral.nivel', n); S._fadeList = true; render();
+  var oc = listar(S.ref, n, S.regiao).filter(function(x){ return x.motivo; }).length;
+  toast('Nível: ' + NIVEL_NOME[n] + ' · ' + oc + (oc === 1 ? ' pico oculto' : ' picos ocultos'));
+  return true;
+}
+function setTheme(t){
+  var map = { auto: 'auto', system: 'auto', claro: 'claro', light: 'claro', escuro: 'escuro', dark: 'escuro' };
+  if (!map[t]) return false;
+  S.tema = map[t]; sset('terral.tema', S.tema); applyTema(); render(); return true;
+}
+function setRegion(r){
+  if (!REGIOES[r]) return false;
+  S.regiao = r; S.pin = null; S._fadeList = true; render();
+  toast('Região: ' + REGIOES[r] + ' · ' + visiveis(S.ref, S.nivel, r).length + ' picos visíveis');
+  return true;
+}
+function showOnb(){ S.onb = true; S.onbSel = S.nivel; renderOnb(); }
+function finishOnb(){
+  if (!S.onbSel) return;
+  S.nivel = S.onbSel; sset('terral.nivel', S.nivel); sset('terral.onb', '1');
+  S.onbVisto = true; S.onb = false; render();
+}
+
+/* ---- Revisão 3: ações do modo Pro ---- */
+function startTrial(){
+  S.pro = true; sset('terral.pro', '1');
+  S.boas = true;
+  toast('Pro ativado');
+  go('alertas');
+  clearTimeout(boasT);
+  boasT = setTimeout(closeBoas, 1600);
+}
+function closeBoas(){
+  clearTimeout(boasT);
+  if (!S.boas) return;
+  S.boas = false; go('alertas');
+}
+function setPro(on){
+  S.pro = !!on; sset('terral.pro', S.pro ? '1' : '0');
+  if (!S.pro){ S.dia = 0; S.sheet = false; S.boas = false; clearTimeout(boasT); }
+  render(); return true;
+}
+function setDay(n){
+  n = Number(n);
+  if (!S.pro || !(n >= 0 && n <= 6)) return false;
+  S.dia = n; S._fadeList = true; render(); return true;
+}
+function toggleFav(id){
+  if (!S.pro || !SPOT_BY_ID[id]) return false;
+  var i = S.favoritos.indexOf(id), nome = SPOT_BY_ID[id].nome;
+  if (i >= 0){ S.favoritos.splice(i, 1); toast('Removido dos favoritos: ' + nome); }
+  else { S.favoritos.push(id); toast('Favorito: ' + nome); }
+  S._fadeList = true; salvarFavs(); render(); return true;
+}
+function irJanela(id, d){
+  if (!S.pro || !SPOT_BY_ID[id]) return false;
+  S.dia = d; S.tela = 'hoje'; S.sheet = false; S.spot = id; S._enter = true;
+  try { window.scrollTo(0, 0); } catch (e) { /* ignorado */ }
+  render(); return true;
+}
+function ajustarMin(id, dir){
+  var a = getAlerta(id); if (!a) return false;
+  var m = Math.round((a.min + dir * 0.5) * 2) / 2;
+  a.min = Math.min(9.5, Math.max(5, m)); salvarAlertas(); render(); return true;
+}
+function toggleAlerta(id){
+  var a = getAlerta(id); if (!a) return false;
+  a.ativo = !a.ativo; salvarAlertas();
+  toast('Alerta ' + (a.ativo ? 'ligado' : 'desligado')); render(); return true;
+}
+function removerAlerta(id){
+  S.alertas = S.alertas.filter(function(a){ return a.id !== id; });
+  salvarAlertas(); toast('Alerta removido'); render(); return true;
+}
+function criarAlerta(id){
+  if (!addAlerta(id)) return false;
+  toast('Alerta criado: ' + SPOT_BY_ID[id].nome + ' acima de 7,0');
+  render(); return true;
+}
+
+document.addEventListener('click', function(ev){
+  var el = ev.target && ev.target.closest ? ev.target.closest('[data-act]') : null;
+  if (!el) return;
+  var a = el.getAttribute('data-act'), id = el.getAttribute('data-id'), v = el.getAttribute('data-v');
+  switch (a){
+    case 'tab': if (v !== S.tela) go(v); else { S.spot = null; render(); } break;
+    case 'spot': openSpot(id); break;
+    case 'spot-close': closeSpot(); break;
+    case 'pro': openPro(); break;
+    case 'pro-close': closePro(); break;
+    case 'trial': startTrial(); break;
+    case 'boas-close': closeBoas(); break;
+    case 'dia': setDay(v); break;
+    case 'janela': irJanela(id, Number(v)); break;
+    case 'fav': if (S.pro) toggleFav(id); else openPro(); break;
+    case 'alerta-add-open': openAdd(); break;
+    case 'alerta-add': S.sheet = false; criarAlerta(id); break;
+    case 'alerta-cria': criarAlerta(id); break;
+    case 'alerta-ir': go('alertas'); break;
+    case 'alerta-on': toggleAlerta(id); break;
+    case 'alerta-del': removerAlerta(id); break;
+    case 'alerta-min': ajustarMin(id, Number(v)); break;
+    case 'plano-free': setPro(false); toast('Plano grátis ativo'); break;
+    case 'ir-alertas': go('alertas'); break;
+    case 'plano': S.plano = v; render(); break;
+    case 'nivel': setLevel(v); break;
+    case 'tema': setTheme(v); break;
+    case 'regiao': setRegion(v); break;
+    case 'loc': S.loc = v === 'GPS' ? 'GPS' : 'Região'; render(); break;
+    case 'oculto': S.ocultosAbertos = !S.ocultosAbertos; render(); break;
+    case 'mapa-modo': S.mapa = v; S.pin = null; render(); break;
+    case 'pin': S.pin = S.pin === id ? null : id; render(); break;
+    case 'pin-close': S.pin = null; render(); break;
+    case 'onb-sel': S.onbSel = v; renderOnb(); break;
+    case 'onb-done': finishOnb(); break;
+    case 'onb-open': showOnb(); break;
+    default: break;
+  }
+});
+document.addEventListener('keydown', function(ev){
+  var t = ev.target;
+  if ((ev.key === 'Enter' || ev.key === ' ') && t && t.getAttribute && t.getAttribute('role') === 'button' && t.hasAttribute('data-act')){
+    ev.preventDefault(); t.click();
+  }
+});
+
+/* ================= Ganchos de teste (nomes mantidos) ================= */
+window.__TERRAL__ = {
+  go: function(t){ return go(t); },
+  openSpot: function(id){ return openSpot(id); },
+  closeSpot: function(){ return closeSpot(); },
+  setLevel: function(n){ return setLevel(n); },
+  setTheme: function(t){ return setTheme(t); },
+  setRegion: function(r){ return setRegion(r); },
+  setPro: function(b){ return setPro(b); },
+  setDay: function(n){ return setDay(n); },
+  toggleFav: function(id){ return toggleFav(id); },
+  get state(){
+    return { tela: S.tela, nivel: S.nivel, tema: S.tema, regiao: S.regiao, hora: S.hora, refHour: S.ref,
+      spot: S.spot, sheet: S.sheet, onboarding: S.onb, pin: S.pin, mapa: S.mapa,
+      pro: S.pro, dia: S.dia, alertas: S.alertas.length, favoritos: S.favoritos.slice() };
+  }
+};
+
+/* ================= Boot ================= */
+function boot(){
+  try {
+    var n = sget('terral.nivel'); if (NIVEIS.indexOf(n) >= 0) S.nivel = n;
+    var tm = sget('terral.tema'); if (tm === 'auto' || tm === 'claro' || tm === 'escuro') S.tema = tm;
+    S.onbVisto = sget('terral.onb') === '1';
+  } catch (e) { ERR.push('prefs: ' + e.message); }
+
+  /* Revisão 3: plano Pro simulado, alertas e favoritos (sempre com leitura protegida) */
+  S.pro = sget('terral.pro') === '1';
+  var al = lerJSON('terral.alertas');
+  if (Array.isArray(al)) S.alertas = al.filter(function(a, i, arr){
+    return alertaValido(a) && arr.findIndex(function(x){ return x && x.id === a.id; }) === i;
+  });
+  else { S.alertas = SEMENTE_ALERTAS.map(function(a){ return { id: a.id, min: a.min, ativo: a.ativo }; }); salvarAlertas(); }
+  var fv = lerJSON('terral.favoritos');
+  S.favoritos = Array.isArray(fv) ? fv.filter(function(id, i, arr){ return !!SPOT_BY_ID[id] && arr.indexOf(id) === i; }) : [];
+
+  var h = P.get('hora');
+  if (h !== null && /^\d{1,2}$/.test(h) && +h <= 23) S.hora = +h;
+  var nv = P.get('nivel'); if (NIVEIS.indexOf(nv) >= 0) { S.nivel = nv; sset('terral.nivel', nv); }
+  var tp = P.get('tema'); if (tp === 'escuro' || tp === 'claro') S.tema = tp;
+  var tl = P.get('tela'); if (TELAS.indexOf(tl) >= 0) S.tela = tl;
+  var pc = P.get('pico'); if (pc && SPOT_BY_ID[pc]) S.spot = pc;
+  if (P.get('pro') === '1'){ S.pro = true; sset('terral.pro', '1'); }
+  var dp = P.get('dia'); if (S.pro && dp !== null && /^[0-6]$/.test(dp)) S.dia = +dp;
+
+  S._enter = true;
+  S.onb = !P.has('skip') && !S.onbVisto;
+  S.onbSel = S.nivel;   // Intermediário pré-selecionado por padrão
+  applyTema();
+  render();
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
